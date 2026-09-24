@@ -12,15 +12,15 @@ All settings (database, JWT, email, seed data) live in dotenv files at the repos
 
 | File | Committed | Purpose |
 | --- | --- | --- |
-| `.env.example` | yes | Every variable with local defaults and placeholders. The starting point after a clone. |
+| `.env.example` | yes | Every variable with local development defaults. The starting point for `.env`. |
 | `.env` | no | The active settings. The API and Docker Compose read only this file. |
-| `.env.dev` | no | Development preset with local defaults. |
-| `.env.prod` | no | Production preset with `change-me` placeholders to fill in. |
+| `.env.dev`, `.env.prod`, ... | no | Optional presets you create from `.env.example`. |
 
-`.gitignore` ignores `.env` and every `.env.*` except `.env.example`. A new project already has `.env`,
-`.env.dev` and `.env.prod`; after a fresh clone, create them with `cp .env.example .env` (and copy it
-to `.env.dev` / `.env.prod` if you want presets). Switch environments by copying a preset onto `.env`,
-e.g. `cp .env.prod .env` on a server, and fill in the real values.
+`.gitignore` ignores `.env` and every `.env.*` except `.env.example`, so only `.env.example` is in the
+repository and in a new project. Create your settings from it before the first run:
+`cp .env.example .env` (Windows PowerShell: `Copy-Item .env.example .env`). For presets, copy it to
+`.env.dev` / `.env.prod` as well, set `APP_ENV` and the values, and switch by copying a preset onto `.env`,
+e.g. `cp .env.prod .env` on a server.
 
 | Variable | Used for |
 | --- | --- |
@@ -35,7 +35,7 @@ e.g. `cp .env.prod .env` on a server, and fill in the real values.
 The API loads `.env` at startup with [DotNetEnv](https://github.com/tonerdo/dotnet-env)
 (`Common/Settings/EnvFile.cs`). Variables already set in the environment (Docker, CI, your shell) win
 over the file, for example `APP_ENV=stage dotnet run ...`.
-For a staging preset, copy `.env.prod` to `.env.stage` and set `APP_ENV=stage`.
+For a staging preset, copy `.env.example` to `.env.stage` and set `APP_ENV=stage`.
 
 ## Reading settings
 
@@ -86,7 +86,8 @@ To add a setting: add the variable to `.env.example` (committed, so others see i
 ## Run locally (API on your machine, database in Docker)
 
 ```bash
-# 1. Start PostgreSQL and Mailpit (settings from the root .env)
+# 1. Create your settings (once) and start PostgreSQL and Mailpit
+cp .env.example .env
 cd docker
 docker compose --env-file ../.env up -d db mailpit
 cd ..
@@ -217,6 +218,7 @@ Until the first migration exists, Development uses `EnsureCreated`. After that i
 Never commit secrets. `.env`, `.env.dev` and `.env.prod` are in `.gitignore`; only `.env.example` is
 committed, and it must keep placeholders or local-only defaults.
 
-In production, either fill in `.env` on the server from `.env.prod`, or set the same variables
-(`DB_PASSWORD`, `JWT_SIGNING_KEY`, ...) through your platform's environment or secret store, which
-always win over `.env`. With the `change-me` placeholder key the API refuses to start.
+In production, either create `.env` on the server from `.env.example` with `APP_ENV=prod` and real
+values (new database password, `JWT_SIGNING_KEY` from `openssl rand -base64 48`, your SMTP provider),
+or set the same variables through your platform's environment or secret store, which always win over
+`.env`. Never run production with the development values from `.env.example`.

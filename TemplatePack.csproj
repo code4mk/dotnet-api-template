@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <Content Include="templates/**/*"
-             Exclude="templates/**/bin/**;templates/**/obj/**;templates/**/.vs/**;templates/**/TestResults/**" />
+             Exclude="templates/**/bin/**;templates/**/obj/**;templates/**/.vs/**;templates/**/TestResults/**;templates/**/.env;templates/**/.env.dev;templates/**/.env.stage;templates/**/.env.prod;templates/**/.env.local" />
     <None Include="README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 

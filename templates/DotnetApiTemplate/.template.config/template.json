@@ -93,7 +93,12 @@
             "**/*.user",
             "**/TestResults/**",
             ".git/**",
-            ".template.config/**"
+            ".template.config/**",
+            ".env",
+            ".env.dev",
+            ".env.stage",
+            ".env.prod",
+            ".env.local"
           ]
         }
       ]

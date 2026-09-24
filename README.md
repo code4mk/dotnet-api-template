@@ -96,7 +96,8 @@ cd nexusre-backend
 dotnet build
 dotnet test
 
-# Start PostgreSQL and Mailpit (settings come from the root .env; after a fresh clone: cp .env.example .env)
+# Create your settings, then start PostgreSQL and Mailpit
+cp .env.example .env          # Windows PowerShell: Copy-Item .env.example .env
 cd docker
 docker compose --env-file ../.env up -d db mailpit
 cd ..
@@ -125,7 +126,7 @@ Full developer guide inside every project: `docs/development/getting-started.md`
 ## Hidden files
 
 Several important files start with a dot and are **hidden by default** in Finder and sometimes in
-Windows Explorer: `.env`, `.env.example`, `.env.dev`, `.env.prod`, `.gitignore`, `.editorconfig`, `.github/`, `.config/`,
+Windows Explorer: `.env.example` (and your `.env`), `.gitignore`, `.editorconfig`, `.github/`, `.config/`,
 `.dockerignore` and `.template.config/`. They are there.
 
 - macOS Finder: press `Cmd + Shift + .`
@@ -135,15 +136,14 @@ Windows Explorer: `.env`, `.env.example`, `.env.dev`, `.env.prod`, `.gitignore`,
 ## Secrets and configuration
 
 Database, JWT and seed settings live in dotenv files at the project root. The API and Docker Compose
-read only `.env`; `.env.dev` and `.env.prod` are presets you copy onto it. Only `.env.example` is
-committed (`.gitignore` ignores `.env` and every `.env.*` except it).
+read only `.env`. A new project contains only `.env.example`, the one env file that is committed
+(`.gitignore` ignores `.env` and every `.env.*` except it); create `.env` from it before the first run.
 
 | File | Committed | Contents |
 | --- | --- | --- |
-| `.env.example` | yes | every variable with local defaults; `cp .env.example .env` after a clone |
-| `.env` | no | active settings; a new project starts with a copy of `.env.dev` |
-| `.env.dev` | no | `APP_ENV=dev` and local defaults |
-| `.env.prod` | no | `APP_ENV=prod` and `change-me` placeholders |
+| `.env.example` | yes | every variable with local defaults; start with `cp .env.example .env` |
+| `.env` | no | active settings |
+| `.env.dev`, `.env.prod`, ... | no | optional presets you create from `.env.example` and copy onto `.env` |
 
 | Variable | Purpose |
 | --- | --- |
@@ -153,8 +153,9 @@ committed (`.gitignore` ignores `.env` and every `.env.*` except it).
 | `JWT_SIGNING_KEY` | JWT signing key, 32+ characters |
 | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | admin user seeded in Development |
 
-On a server: `cp .env.prod .env` and replace every `change-me`, or set the same variables in the
-platform's environment or secret store; real environment variables always win over `.env`.
+On a server: create `.env` from `.env.example` with `APP_ENV=prod` and real values (never the
+development defaults), or set the same variables in the platform's environment or secret store;
+real environment variables always win over `.env`.
 Email uses `EMAIL_HOST`, `EMAIL_USERNAME`, ... in the same files. In development it goes to Mailpit
 (inbox at `http://localhost:<MAILPIT_UI_PORT>`); an empty `EMAIL_HOST` means emails are only logged.
 In code, settings are typed classes bound from these variables, like pydantic `BaseSettings`, and
