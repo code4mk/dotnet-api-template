@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging.Abstractions;
 using DotnetApiTemplate.Api.Common.Results;
 using DotnetApiTemplate.Api.Data;
 using DotnetApiTemplate.Api.Domain.Entities;
 using DotnetApiTemplate.Api.Features.Users;
+using DotnetApiTemplate.Api.Features.Users.Emails;
 using DotnetApiTemplate.UnitTests.TestUtilities;
 
 namespace DotnetApiTemplate.UnitTests.Features.Users;
@@ -11,11 +13,23 @@ public sealed class UserServiceTests : IDisposable
 {
     private readonly AppDbContext _db = TestDbContextFactory.Create();
     private readonly PasswordHasher<User> _hasher = new();
+    private readonly FakeEmailService _emails = new();
     private readonly UserService _sut;
 
-    public UserServiceTests() => _sut = new UserService(_db, _hasher);
+    public UserServiceTests() => _sut = new UserService(_db, _hasher, _emails, NullLogger<UserService>.Instance);
 
     public void Dispose() => _db.Dispose();
+
+    [Fact]
+    public async Task CreateAsync_WithNewEmail_SendsWelcomeEmail()
+    {
+        await _sut.CreateAsync(new CreateUserRequest("Jane Doe", "Jane@Example.com", "Password@123"), CancellationToken.None);
+
+        var (to, email) = Assert.Single(_emails.Sent);
+        Assert.Equal("jane@example.com", to);
+        var welcome = Assert.IsType<WelcomeEmail>(email);
+        Assert.Equal("Jane Doe", welcome.FullName);
+    }
 
     [Fact]
     public async Task CreateAsync_WithNewEmail_CreatesUserWithHashedPassword()

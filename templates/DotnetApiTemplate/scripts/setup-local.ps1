@@ -14,8 +14,8 @@ try {
         Write-Host "Created .env from .env.example" -ForegroundColor Yellow
     }
 
-    Write-Host "Starting PostgreSQL..." -ForegroundColor Cyan
-    docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.override.yml up -d db
+    Write-Host "Starting PostgreSQL and Mailpit..." -ForegroundColor Cyan
+    docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.override.yml up -d db mailpit
 
     Write-Host "Restoring and building..." -ForegroundColor Cyan
     dotnet build

@@ -18,6 +18,7 @@ dotnet new dotnet-api-template -n NexusRE -o nexusre-backend
 | Validation | .NET 10 built-in validation with data annotations on request DTOs |
 | Data | EF Core with PostgreSQL, entity configurations, development seed data |
 | Security | JWT bearer authentication, Admin policy, password hashing |
+| Email | Typed emails with Scriban templates, shared layout, CSS inlining (PreMailer.Net), MailKit SMTP, Mailpit inbox for local development |
 | Operations | Correlation id middleware, `/health` endpoint, structured logging |
 | Samples | Auth (login), Users, Products features, `.http` request file |
 | Tests | Unit tests (EF Core in-memory) and integration tests (`WebApplicationFactory`) |
@@ -95,9 +96,9 @@ cd nexusre-backend
 dotnet build
 dotnet test
 
-# Start PostgreSQL (settings come from the root .env; after a fresh clone: cp .env.example .env)
+# Start PostgreSQL and Mailpit (settings come from the root .env; after a fresh clone: cp .env.example .env)
 cd docker
-docker compose --env-file ../.env up -d db
+docker compose --env-file ../.env up -d db mailpit
 cd ..
 
 # Run the API (reloads when you save a file)
@@ -154,7 +155,8 @@ committed (`.gitignore` ignores `.env` and every `.env.*` except it).
 
 On a server: `cp .env.prod .env` and replace every `change-me`, or set the same variables in the
 platform's environment or secret store; real environment variables always win over `.env`.
-Email uses `EMAIL_HOST`, `EMAIL_USERNAME`, ... in the same files; an empty `EMAIL_HOST` means emails are logged.
+Email uses `EMAIL_HOST`, `EMAIL_USERNAME`, ... in the same files. In development it goes to Mailpit
+(inbox at `http://localhost:<MAILPIT_UI_PORT>`); an empty `EMAIL_HOST` means emails are only logged.
 In code, settings are typed classes bound from these variables, like pydantic `BaseSettings`, and
 validated at startup; see `docs/development/getting-started.md` in a generated project.
 

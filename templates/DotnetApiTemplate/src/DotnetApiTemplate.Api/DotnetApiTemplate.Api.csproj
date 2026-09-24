@@ -10,10 +10,19 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="DotNetEnv" />
+    <PackageReference Include="Scriban" />
+    <PackageReference Include="PreMailer.Net" />
+    <PackageReference Include="MailKit" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Email templates and styles are embedded in the assembly by file name (see Infrastructure/Email). -->
+    <EmbeddedResource Include="**/*.scriban;Infrastructure/Email/Layout/*.css" Exclude="bin/**;obj/**"
+                      LogicalName="email-templates/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -18,6 +18,20 @@ public sealed class UserEndpointsTests(ApiFactory factory) : IClassFixture<ApiFa
     }
 
     [Fact]
+    public async Task CreateUser_SendsRenderedWelcomeEmail()
+    {
+        var client = factory.CreateClient();
+        var email = $"welcome-{Guid.NewGuid():N}@example.com";
+
+        await client.PostAsJsonAsync("/api/users", new CreateUserRequest("Jane Doe", email, "Password@123"));
+
+        var message = Assert.Single(factory.Emails.Sent, m => m.To == email);
+        Assert.Equal("Welcome, Jane Doe!", message.Subject);
+        Assert.Contains("style=\"", message.HtmlBody);
+        Assert.Contains("Welcome, Jane Doe!", message.TextBody);
+    }
+
+    [Fact]
     public async Task CreateUser_WithDuplicateEmail_ReturnsConflict()
     {
         var client = factory.CreateClient();

@@ -5,7 +5,7 @@ ASP.NET Core Minimal API built on .NET 10.
 ## Quick start
 
 ```bash
-cd docker && docker compose --env-file ../.env up -d db && cd ..
+cd docker && docker compose --env-file ../.env up -d db mailpit && cd ..
 dotnet watch --project src/DotnetApiTemplate.Api
 ```
 

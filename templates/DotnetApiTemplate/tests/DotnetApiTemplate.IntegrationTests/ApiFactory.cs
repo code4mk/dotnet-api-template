@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using DotnetApiTemplate.Api.Data;
+using DotnetApiTemplate.Api.Infrastructure.Email.Sending;
 using DotnetApiTemplate.IntegrationTests.TestUtilities;
 
 namespace DotnetApiTemplate.IntegrationTests;
@@ -15,6 +17,9 @@ namespace DotnetApiTemplate.IntegrationTests;
 public sealed class ApiFactory : WebApplicationFactory<Program>
 {
     private readonly string _databaseName = $"integration-tests-{Guid.NewGuid()}";
+
+    /// <summary>Emails "sent" by the API: rendered for real, but captured instead of delivered.</summary>
+    public FakeEmailSender Emails { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -44,6 +49,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
             }
 
             services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase(_databaseName));
+
+            services.RemoveAll<IEmailSender>();
+            services.AddSingleton<IEmailSender>(Emails);
 
             // Replace JWT with a simple test scheme (see TestAuthHandler).
             services.AddAuthentication(TestAuthHandler.SchemeName)

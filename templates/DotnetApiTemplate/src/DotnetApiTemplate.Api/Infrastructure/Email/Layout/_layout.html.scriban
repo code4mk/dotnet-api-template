@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>{{ subject }}</title>
+</head>
+<body class="body">
+{{~ # Shared layout for every email: `content` is the rendered body template, styles come from email.css (inlined). ~}}
+  <table role="presentation" class="wrapper" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0">
+          <tr>
+            <td class="header">{{ app_name }}</td>
+          </tr>
+          <tr>
+            <td class="content">
+              {{ content }}
+            </td>
+          </tr>
+          <tr>
+            <td class="footer">
+              &copy; {{ year }} {{ app_name }}. You received this email because you have an account with us.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

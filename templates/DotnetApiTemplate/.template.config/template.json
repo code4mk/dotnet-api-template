@@ -59,6 +59,26 @@
       },
       "replaces": "18080",
       "description": "Free host port for the API container, so projects don't clash with other services on 8080."
+    },
+    "mailSmtpHostPort": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 21000,
+        "high": 21999
+      },
+      "replaces": "21025",
+      "description": "Free host port for Mailpit SMTP (local development email)."
+    },
+    "mailUiHostPort": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 28000,
+        "high": 28999
+      },
+      "replaces": "28025",
+      "description": "Free host port for the Mailpit web inbox."
     }
   },
   "sources": [

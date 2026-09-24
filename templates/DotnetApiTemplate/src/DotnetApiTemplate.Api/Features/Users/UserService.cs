@@ -4,10 +4,16 @@ using DotnetApiTemplate.Api.Common.Pagination;
 using DotnetApiTemplate.Api.Common.Results;
 using DotnetApiTemplate.Api.Data;
 using DotnetApiTemplate.Api.Domain.Entities;
+using DotnetApiTemplate.Api.Features.Users.Emails;
+using DotnetApiTemplate.Api.Infrastructure.Email;
 
 namespace DotnetApiTemplate.Api.Features.Users;
 
-internal sealed class UserService(AppDbContext db, IPasswordHasher<User> passwordHasher) : IUserService
+internal sealed class UserService(
+    AppDbContext db,
+    IPasswordHasher<User> passwordHasher,
+    IEmailService emailService,
+    ILogger<UserService> logger) : IUserService
 {
     public Task<PagedResponse<UserResponse>> GetAllAsync(int? page, int? pageSize, CancellationToken cancellationToken) =>
         db.Users
@@ -41,6 +47,8 @@ internal sealed class UserService(AppDbContext db, IPasswordHasher<User> passwor
         db.Users.Add(user);
         await db.SaveChangesAsync(cancellationToken);
 
+        await SendWelcomeEmailAsync(user, cancellationToken);
+
         return user.ToResponse();
     }
 
@@ -70,6 +78,19 @@ internal sealed class UserService(AppDbContext db, IPasswordHasher<User> passwor
         await db.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
+    }
+
+    /// <summary>A failed welcome email must not fail the sign-up, so errors are logged, not thrown.</summary>
+    private async Task SendWelcomeEmailAsync(User user, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await emailService.SendAsync(user.Email, new WelcomeEmail(user.FullName, user.Email), cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogError(ex, "Failed to send the welcome email to user {UserId}", user.Id);
+        }
     }
 }
 

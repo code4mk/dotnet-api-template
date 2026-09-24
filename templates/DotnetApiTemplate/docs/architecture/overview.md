@@ -25,7 +25,7 @@ flowchart LR
 | `Features/` | One folder per business feature: endpoints, service, DTOs, mappings |
 | `Domain/` | Entities and enums, no framework dependencies |
 | `Data/` | EF Core `AppDbContext`, entity configurations, migrations, seed data |
-| `Infrastructure/` | Authentication (JWT), email, clients for external services |
+| `Infrastructure/` | Authentication (JWT), email (Scriban templates, PreMailer.Net, MailKit), clients for external services |
 | `Common/` | Cross-cutting code: errors, middleware, results, pagination, registration |
 
 ## Cross-cutting decisions

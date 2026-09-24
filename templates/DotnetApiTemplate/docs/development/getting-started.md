@@ -28,7 +28,8 @@ e.g. `cp .env.prod .env` on a server, and fill in the real values.
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL. The API builds its connection string from these. `DB_PORT` is also the host port Docker publishes PostgreSQL on (`54320` in this project, picked when it was created so it doesn't clash with other Postgres containers). |
 | `API_PORT` | Host port for the API container (`18080` in this project). |
 | `JWT_SIGNING_KEY` | JWT signing key, at least 32 characters. Optional: `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_EXPIRY_MINUTES`. |
-| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_ENABLE_SSL`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`, `EMAIL_FROM` | SMTP. Empty `EMAIL_HOST` logs emails instead of sending them. |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_ENABLE_SSL`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`, `EMAIL_FROM`, `EMAIL_FROM_NAME` | SMTP. Development sends to Mailpit (`EMAIL_PORT` is its host port); empty `EMAIL_HOST` only logs emails. |
+| `MAILPIT_UI_PORT` | Host port of the Mailpit inbox (`28025` in this project). |
 | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | Admin user seeded in Development. |
 
 The API loads `.env` at startup with [DotNetEnv](https://github.com/tonerdo/dotnet-env)
@@ -85,9 +86,9 @@ To add a setting: add the variable to `.env.example` (committed, so others see i
 ## Run locally (API on your machine, database in Docker)
 
 ```bash
-# 1. Start PostgreSQL (settings from the root .env)
+# 1. Start PostgreSQL and Mailpit (settings from the root .env)
 cd docker
-docker compose --env-file ../.env up -d db
+docker compose --env-file ../.env up -d db mailpit
 cd ..
 
 # 2. Run the API with auto reload
@@ -132,6 +133,66 @@ builds on your machine.
 
 Only rebuild (`--build`) after changing `docker/Dockerfile.dev`. Stop with the same `--env-file` and `-f`
 flags and `down` instead of `up --build`; add `-v` to also delete the database and NuGet cache volumes.
+
+## Email
+
+Emails are typed classes rendered with [Scriban](https://github.com/scriban/scriban), wrapped in a
+shared layout, CSS-inlined with [PreMailer.Net](https://github.com/milkshakesoftware/PreMailer.Net)
+(Gmail and Outlook drop `<style>` blocks) and sent with [MailKit](https://github.com/jstedfast/MailKit)
+as HTML plus a plain-text part.
+
+```text
+Infrastructure/Email/
+├── IEmailService.cs, EmailService.cs    SendAsync(to, email): render + send (what features use)
+├── EmailTemplate.cs                     base class for typed emails
+├── EmailSettings.cs                     EMAIL_* settings
+├── Rendering/                           Scriban (HTML-escaped) → layout → PreMailer, plain-text part
+├── Sending/                             MailKit (SMTP) or logging when EMAIL_HOST is empty
+└── Layout/_layout.html.scriban, email.css
+Features/Users/Emails/
+├── WelcomeEmail.cs                      model + subject
+└── WelcomeEmail.html.scriban            body (the layout adds header and footer)
+```
+
+**See the emails locally:** Mailpit catches everything the API sends. Open the inbox at
+`http://localhost:28025` (`MAILPIT_UI_PORT`). Create a user (`POST /api/users`) to get the sample
+welcome email.
+
+**Add an email:**
+
+1. Create the model next to the feature, e.g. `Features/Auth/Emails/PasswordResetEmail.cs`:
+
+   ```csharp
+   public sealed class PasswordResetEmail(string fullName, string resetUrl) : EmailTemplate
+   {
+       public string FullName { get; } = fullName;
+       public string ResetUrl { get; } = resetUrl;
+       public override string Subject => "Reset your password";
+   }
+   ```
+
+2. Add `PasswordResetEmail.html.scriban` next to it. Properties are available in snake_case, plus
+   `app_name` and `year`:
+
+   ```html
+   <h1>Hi {{ full_name }},</h1>
+   <p><a class="button" href="{{ reset_url }}">Reset password</a></p>
+   ```
+
+   Optionally add `PasswordResetEmail.txt.scriban` for the plain-text part; otherwise it is generated
+   from the HTML.
+
+3. Send it: `await emailService.SendAsync(user.Email, new PasswordResetEmail(user.FullName, url), ct);`
+
+Rules:
+
+- Every `{{ value }}` is HTML-escaped automatically. Use `{{ value | raw }}` only for HTML you control.
+- Templates are code: never render a template that comes from a user or the database.
+- Template file names must be unique (they are embedded by file name). Styles go in `email.css`
+  using classes; they are inlined when the email is rendered.
+- In Development templates are read from disk, so edits show up in the next email without a restart.
+- Decide per email whether a failed send may fail the request. The welcome email logs the error and
+  lets the sign-up succeed (see `UserService`).
 
 ## Tests
 
