@@ -27,6 +27,7 @@ e.g. `cp .env.prod .env` on a server.
 | `APP_ENV` | `dev`, `stage` or `prod`: sets the ASP.NET Core environment (Development, Staging, Production). |
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL. The API builds its connection string from these. `DB_PORT` is also the host port Docker publishes PostgreSQL on (`54320` in this project, picked when it was created so it doesn't clash with other Postgres containers). |
 | `API_PORT` | Host port for the API container (`18080` in this project). |
+| `CORS_ALLOWED_ORIGINS` | Browser frontends on other origins allowed to call the API (comma-separated exact origins). Empty: none. See [CORS](#cors). |
 | `JWT_SIGNING_KEY` | JWT signing key, at least 32 characters. Optional: `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_EXPIRY_MINUTES`. |
 | `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_ENABLE_SSL`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`, `EMAIL_FROM`, `EMAIL_FROM_NAME` | SMTP. Development sends to Mailpit (`EMAIL_PORT` is its host port); empty `EMAIL_HOST` only logs emails. |
 | `MAILPIT_UI_PORT` | Host port of the Mailpit inbox (`28025` in this project). |
@@ -137,6 +138,30 @@ that can't be hot reloaded restart the app automatically. The container keeps it
 
 **`prod` profile:** `api` is built from `docker/Dockerfile` (the production image), so code changes need
 `--build`. It sends email to `EMAIL_HOST` from `.env`.
+
+## CORS
+
+Needed only when a **browser** app on another origin calls the API, e.g. a Vite dev server on
+`http://localhost:5173` or `https://app.example.com` calling `https://api.example.com`. Mobile apps,
+other backends, Postman and a frontend served from the same domain don't need it.
+
+Set the allowed origins in `.env`:
+
+```bash
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000     # development (the default in .env.example)
+CORS_ALLOWED_ORIGINS=https://app.example.com                          # production: your real frontend
+CORS_ALLOWED_ORIGINS=                                                 # no cross-origin browser access
+```
+
+- Only exact origins (`scheme://host[:port]`). Wildcards (`*`), paths and other schemes fail at
+  startup with a clear message, so a typo can't open the API to every site.
+- Allowed: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, and the headers `Authorization`, `Content-Type`,
+  `Accept`, `X-Correlation-Id`. Frontend code can read `X-Correlation-Id` and `Location`.
+- No credentials (cookies): send the JWT in the `Authorization` header.
+- Preflight answers are cached by browsers for 10 minutes. Error responses carry CORS headers too, so
+  the frontend can read the ProblemDetails body.
+
+The policy lives in `Common/Cors/CorsExtensions.cs`.
 
 ## Email
 

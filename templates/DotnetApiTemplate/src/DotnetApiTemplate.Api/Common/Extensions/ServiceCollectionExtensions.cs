@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using DotnetApiTemplate.Api.Common.Cors;
 using DotnetApiTemplate.Api.Common.Errors;
 using DotnetApiTemplate.Api.Common.Json;
 using DotnetApiTemplate.Api.Common.Middleware;
@@ -18,8 +19,8 @@ namespace DotnetApiTemplate.Api.Common.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Cross-cutting API setup: errors, validation, OpenAPI, JSON.</summary>
-    public static IServiceCollection AddApiDefaults(this IServiceCollection services)
+    /// <summary>Cross-cutting API setup: errors, validation, OpenAPI, JSON, CORS.</summary>
+    public static IServiceCollection AddApiDefaults(this IServiceCollection services, IConfiguration configuration)
     {
         // Every error response (exceptions, validation, Result errors, 404s) is ProblemDetails
         // and carries the request's correlation id, the same value as the X-Correlation-Id header.
@@ -39,6 +40,8 @@ public static class ServiceCollectionExtensions
 
         // Request/response bodies, ProblemDetails and OpenAPI all use these settings (see JsonDefaults).
         services.ConfigureHttpJsonOptions(options => JsonDefaults.Configure(options.SerializerOptions));
+
+        services.AddApiCors(configuration);                 // CORS_ALLOWED_ORIGINS
 
         return services;
     }

@@ -7,7 +7,7 @@ EnvFile.Load();                                             // root .env -> envi
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddApiDefaults();                          // ProblemDetails, validation, OpenAPI/Swagger, JSON
+builder.Services.AddApiDefaults(builder.Configuration);     // ProblemDetails, validation, OpenAPI/Swagger, JSON, CORS
 builder.Services.AddInfrastructure(builder.Configuration);  // DbContext, auth, email
 builder.Services.AddFeatures();                             // feature services
 
@@ -15,6 +15,7 @@ var app = builder.Build();
 app.ValidateSettings();                                     // fail fast, listing every invalid env variable
 
 app.UseMiddleware<CorrelationIdMiddleware>();               // first, so error logs and responses carry the id
+app.UseCors();                                              // before errors and auth: preflights and error responses get CORS headers
 app.UseExceptionHandler();                                  // exceptions -> ProblemDetails (GlobalExceptionHandler)
 app.UseStatusCodePages();                                   // empty 4xx/5xx (e.g. 404) -> ProblemDetails
 

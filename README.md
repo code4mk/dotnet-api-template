@@ -17,7 +17,7 @@ dotnet new dotnet-api-template -n NexusRE -o nexusre-backend
 | Errors | `Result<T>` pattern, RFC 7807 ProblemDetails, global exception handler |
 | Validation | .NET 10 built-in validation with data annotations on request DTOs |
 | Data | EF Core with PostgreSQL, entity configurations, `InitialCreate` migration (applied manually, never at startup) |
-| Security | JWT bearer authentication, Admin policy, password hashing |
+| Security | JWT bearer authentication, Admin policy, password hashing, CORS for exact origins from `.env` |
 | Email | Typed emails with Scriban templates, shared layout, CSS inlining (PreMailer.Net), MailKit SMTP, Mailpit inbox for local development |
 | Operations | Correlation id middleware, `/health` endpoint, structured logging |
 | Samples | Auth (login), Users, Products features, `.http` request file |
@@ -152,6 +152,7 @@ read only `.env`. A new project contains only `.env.example`, the one env file t
 | `APP_ENV` | `dev`, `stage` or `prod` → ASP.NET Core Development, Staging, Production |
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL connection; `DB_PORT` is also the host port Docker publishes |
 | `API_PORT` | host port of the API container |
+| `CORS_ALLOWED_ORIGINS` | browser frontends allowed to call the API from other origins (comma-separated, exact origins; empty = none) |
 | `JWT_SIGNING_KEY` | JWT signing key, 32+ characters |
 
 On a server: create `.env` from `.env.example` with `APP_ENV=prod` and real values (never the
