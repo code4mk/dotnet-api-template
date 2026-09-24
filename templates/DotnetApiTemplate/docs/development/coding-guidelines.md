@@ -38,7 +38,7 @@ Copy the `Products` feature as a starting point.
 
 - File-scoped namespaces, one public type per file (small related records may share a DTO file).
 - Async methods end with `Async` (endpoint handlers are exempt).
-- Configuration through strongly typed options classes with `ValidateOnStart`.
+- Configuration through typed settings classes bound from environment variables (`AddEnvSettings`, see getting-started); `appsettings.json` is only for logging.
 - Never commit secrets.
 
 ## Pull request checklist
@@ -48,4 +48,4 @@ Copy the `Products` feature as a starting point.
 - [ ] New endpoints have integration tests, including auth and validation cases.
 - [ ] Public endpoints are intentional (`AllowAnonymous`).
 - [ ] Migration added if the model changed.
-- [ ] No secrets in code or `appsettings.json`.
+- [ ] No secrets in code, `appsettings.json` or `.env.example`; new variables added to `.env.example`.

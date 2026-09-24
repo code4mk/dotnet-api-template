@@ -21,9 +21,12 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         builder.UseEnvironment("Testing");
 
         // Required settings (validated on startup).
-        builder.UseSetting("Jwt:Issuer", "tests");
-        builder.UseSetting("Jwt:Audience", "tests");
-        builder.UseSetting("Jwt:SigningKey", "integration-tests-signing-key-0123456789abcdef");
+        builder.UseSetting("JWT_ISSUER", "tests");
+        builder.UseSetting("JWT_AUDIENCE", "tests");
+        builder.UseSetting("JWT_SIGNING_KEY", "integration-tests-signing-key-0123456789abcdef");
+        builder.UseSetting("DB_NAME", "tests");
+        builder.UseSetting("DB_USER", "tests");
+        builder.UseSetting("DB_PASSWORD", "tests");
 
         builder.ConfigureTestServices(services =>
         {

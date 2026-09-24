@@ -7,20 +7,20 @@ ExternalServices/
 └── Payments/
     ├── IPaymentClient.cs
     ├── PaymentClient.cs        // typed HttpClient
-    ├── PaymentOptions.cs       // base URL, API key
+    ├── PaymentSettings.cs      // PAYMENTS_BASE_URL, PAYMENTS_API_KEY from .env
     └── PaymentDtos.cs          // request/response models of the external API
 ```
 
 Register each client as a typed `HttpClient` in `AddInfrastructure`:
 
 ```csharp
-services.Configure<PaymentOptions>(configuration.GetSection("Payments"));
+services.AddEnvSettings<PaymentSettings>(configuration);
 services.AddHttpClient<IPaymentClient, PaymentClient>((sp, client) =>
 {
-    var options = sp.GetRequiredService<IOptions<PaymentOptions>>().Value;
-    client.BaseAddress = new Uri(options.BaseUrl);
+    var settings = sp.GetRequiredService<PaymentSettings>();
+    client.BaseAddress = new Uri(settings.BaseUrl);
 });
 ```
 
 Rules: never expose external DTOs outside this folder; map them to your own types.
-Keep API keys in user secrets or environment variables, never in `appsettings.json`.
+Keep API keys in `.env` or real environment variables, never in `appsettings.json` or the committed `.env.*` presets.

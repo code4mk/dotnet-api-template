@@ -1,6 +1,9 @@
 using DotnetApiTemplate.Api.Common.Extensions;
 using DotnetApiTemplate.Api.Common.Middleware;
+using DotnetApiTemplate.Api.Common.Settings;
 using DotnetApiTemplate.Api.Data.Seed;
+
+EnvFile.Load();                                             // root .env -> environment variables, APP_ENV -> environment
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +12,7 @@ builder.Services.AddInfrastructure(builder.Configuration);  // DbContext, auth, 
 builder.Services.AddFeatures();                             // feature services
 
 var app = builder.Build();
+app.ValidateSettings();                                     // fail fast, listing every invalid env variable
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();

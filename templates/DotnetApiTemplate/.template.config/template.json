@@ -73,8 +73,7 @@
             "**/*.user",
             "**/TestResults/**",
             ".git/**",
-            ".template.config/**",
-            "docker/.env"
+            ".template.config/**"
           ]
         }
       ]

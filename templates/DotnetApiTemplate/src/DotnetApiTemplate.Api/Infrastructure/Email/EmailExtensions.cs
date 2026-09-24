@@ -1,13 +1,14 @@
+using DotnetApiTemplate.Api.Common.Settings;
+
 namespace DotnetApiTemplate.Api.Infrastructure.Email;
 
 public static class EmailExtensions
 {
     public static IServiceCollection AddEmail(this IServiceCollection services, IConfiguration configuration)
     {
-        var section = configuration.GetSection(EmailOptions.SectionName);
-        services.Configure<EmailOptions>(section);
+        services.AddEnvSettings<EmailSettings>(configuration);
 
-        if (string.IsNullOrWhiteSpace(section["Host"]))
+        if (string.IsNullOrWhiteSpace(configuration["EMAIL_HOST"]))
         {
             services.AddSingleton<IEmailSender, LoggingEmailSender>();
         }

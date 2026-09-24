@@ -10,6 +10,6 @@
 docs/
 tests/
 scripts/
-docker/.env
 **/.env
+**/.env.*
 *.md

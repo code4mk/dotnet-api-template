@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using DotnetApiTemplate.Api.Common.Errors;
+using DotnetApiTemplate.Api.Common.Settings;
 using DotnetApiTemplate.Api.Data;
 using DotnetApiTemplate.Api.Domain.Entities;
 using DotnetApiTemplate.Api.Features.Auth;
@@ -38,8 +39,12 @@ public static class ServiceCollectionExtensions
     {
         services.TryAddSingleton(TimeProvider.System);
 
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("Default")));
+        services.AddEnvSettings<AppSettings>(configuration);
+        services.AddEnvSettings<DatabaseSettings>(configuration);
+        services.AddEnvSettings<SeedSettings>(configuration);
+
+        services.AddDbContext<AppDbContext>((sp, options) =>
+            options.UseNpgsql(sp.GetRequiredService<DatabaseSettings>().ConnectionString));
 
         services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddJwtAuthentication(configuration);

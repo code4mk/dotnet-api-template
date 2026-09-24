@@ -1,12 +1,7 @@
-# Local development overrides. Docker Compose merges this file automatically.
+# Local overrides. Docker Compose merges this file automatically when you run from docker/
+# without -f. The API environment (Development, Staging, Production) comes from APP_ENV in .env.
 
 services:
-  api:
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      Seed__AdminEmail: "${SEED_ADMIN_EMAIL}"
-      Seed__AdminPassword: "${SEED_ADMIN_PASSWORD}"
-
   db:
     ports:
       # Expose so you can connect from your IDE or run the API outside Docker.

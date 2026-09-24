@@ -8,9 +8,9 @@ using DotnetApiTemplate.Api.Domain.Entities;
 
 namespace DotnetApiTemplate.Api.Infrastructure.Authentication;
 
-internal sealed class JwtTokenService(IOptions<JwtOptions> options, TimeProvider timeProvider) : ITokenService
+internal sealed class JwtTokenService(IOptions<JwtSettings> options, TimeProvider timeProvider) : ITokenService
 {
-    private readonly JwtOptions _options = options.Value;
+    private readonly JwtSettings _options = options.Value;
     private readonly JsonWebTokenHandler _handler = new();
 
     public AccessToken CreateToken(User user)

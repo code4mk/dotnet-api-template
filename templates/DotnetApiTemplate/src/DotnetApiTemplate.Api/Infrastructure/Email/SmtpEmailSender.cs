@@ -8,9 +8,9 @@ namespace DotnetApiTemplate.Api.Infrastructure.Email;
 /// Simple SMTP sender. For high volume or advanced features, replace with MailKit
 /// or a provider SDK (SendGrid, Amazon SES, ...) behind the same interface.
 /// </summary>
-internal sealed class SmtpEmailSender(IOptions<EmailOptions> options) : IEmailSender
+internal sealed class SmtpEmailSender(IOptions<EmailSettings> options) : IEmailSender
 {
-    private readonly EmailOptions _options = options.Value;
+    private readonly EmailSettings _options = options.Value;
 
     public async Task SendAsync(string to, string subject, string htmlBody, CancellationToken cancellationToken = default)
     {

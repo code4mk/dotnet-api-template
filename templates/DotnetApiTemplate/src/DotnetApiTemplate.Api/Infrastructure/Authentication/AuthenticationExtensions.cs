@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using DotnetApiTemplate.Api.Common.Settings;
 using DotnetApiTemplate.Api.Domain.Enums;
 
 namespace DotnetApiTemplate.Api.Infrastructure.Authentication;
@@ -10,19 +11,16 @@ public static class AuthenticationExtensions
 {
     public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddOptions<JwtOptions>()
-            .Bind(configuration.GetSection(JwtOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        services.AddEnvSettings<JwtSettings>(configuration);
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer();
 
-        // Configured from IOptions<JwtOptions> so values are read lazily (works with tests and secrets).
+        // Configured from IOptions<JwtSettings> so values are read lazily (works with tests and secrets).
         services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-            .Configure<IOptions<JwtOptions>>((bearer, jwtOptions) =>
+            .Configure<IOptions<JwtSettings>>((bearer, jwtSettings) =>
             {
-                var jwt = jwtOptions.Value;
+                var jwt = jwtSettings.Value;
                 bearer.MapInboundClaims = false;
                 bearer.TokenValidationParameters = new TokenValidationParameters
                 {

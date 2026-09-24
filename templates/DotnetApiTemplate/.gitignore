@@ -20,8 +20,10 @@ TestResults/
 coverage*.xml
 *.trx
 
-# Secrets and environment
+# Secrets and environment: only .env.example is committed
 .env
+.env.*
+!.env.example
 appsettings.*.local.json
 *.pfx
 

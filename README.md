@@ -95,10 +95,9 @@ cd nexusre-backend
 dotnet build
 dotnet test
 
-# Start PostgreSQL
+# Start PostgreSQL (settings come from the root .env; after a fresh clone: cp .env.example .env)
 cd docker
-cp .env.example .env          # Windows PowerShell: Copy-Item .env.example .env
-docker compose up -d db
+docker compose --env-file ../.env up -d db
 cd ..
 
 # Run the API (reloads when you save a file)
@@ -125,7 +124,7 @@ Full developer guide inside every project: `docs/development/getting-started.md`
 ## Hidden files
 
 Several important files start with a dot and are **hidden by default** in Finder and sometimes in
-Windows Explorer: `docker/.env.example`, `.gitignore`, `.editorconfig`, `.github/`, `.config/`,
+Windows Explorer: `.env`, `.env.example`, `.env.dev`, `.env.prod`, `.gitignore`, `.editorconfig`, `.github/`, `.config/`,
 `.dockerignore` and `.template.config/`. They are there.
 
 - macOS Finder: press `Cmd + Shift + .`
@@ -134,17 +133,30 @@ Windows Explorer: `docker/.env.example`, `.gitignore`, `.editorconfig`, `.github
 
 ## Secrets and configuration
 
-The development values in `appsettings.Development.json` and `.env.example` are for local use only.
+Database, JWT and seed settings live in dotenv files at the project root. The API and Docker Compose
+read only `.env`; `.env.dev` and `.env.prod` are presets you copy onto it. Only `.env.example` is
+committed (`.gitignore` ignores `.env` and every `.env.*` except it).
 
-| Setting | Local | Servers / production |
+| File | Committed | Contents |
 | --- | --- | --- |
-| `ConnectionStrings:Default` | `appsettings.Development.json` | env var `ConnectionStrings__Default` |
-| `Jwt:SigningKey` (32+ chars) | `appsettings.Development.json` or user secrets | env var `Jwt__SigningKey` or a secret store |
-| `Email:*` | empty (emails are logged) | env vars `Email__Host`, `Email__UserName`, ... |
+| `.env.example` | yes | every variable with local defaults; `cp .env.example .env` after a clone |
+| `.env` | no | active settings; a new project starts with a copy of `.env.dev` |
+| `.env.dev` | no | `APP_ENV=dev` and local defaults |
+| `.env.prod` | no | `APP_ENV=prod` and `change-me` placeholders |
 
-```bash
-dotnet user-secrets --project src/NexusRE.Api set "Jwt:SigningKey" "<long random value>"
-```
+| Variable | Purpose |
+| --- | --- |
+| `APP_ENV` | `dev`, `stage` or `prod` → ASP.NET Core Development, Staging, Production |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL connection; `DB_PORT` is also the host port Docker publishes |
+| `API_PORT` | host port of the API container |
+| `JWT_SIGNING_KEY` | JWT signing key, 32+ characters |
+| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | admin user seeded in Development |
+
+On a server: `cp .env.prod .env` and replace every `change-me`, or set the same variables in the
+platform's environment or secret store; real environment variables always win over `.env`.
+Email uses `EMAIL_HOST`, `EMAIL_USERNAME`, ... in the same files; an empty `EMAIL_HOST` means emails are logged.
+In code, settings are typed classes bound from these variables, like pydantic `BaseSettings`, and
+validated at startup; see `docs/development/getting-started.md` in a generated project.
 
 ## Using a different database
 
@@ -251,9 +263,10 @@ a broken version can be unlisted on nuget.org but never deleted.
 | Problem | Fix |
 | --- | --- |
 | `No templates found matching: 'dotnet-api-template'` | Install the template (step 1) and check `dotnet new list dotnet-api-template`. |
-| Can't find `.env.example` | It's a hidden file; see [Hidden files](#hidden-files). |
-| `JwtOptions` validation error on startup | Set `Jwt:SigningKey` (32+ characters). |
-| API can't connect to the database | Start it with `docker compose up -d db` in `docker/`, and check that `DB_PORT` in `docker/.env` matches the port in `appsettings.Development.json`. |
-| `port is already allocated` for the database | Another container uses that port. Pick a free one for `DB_PORT` in `docker/.env` and the same port in `appsettings.Development.json`. |
+| Can't find `.env` | It's a hidden file; see [Hidden files](#hidden-files). If it's missing (fresh clone), `cp .env.example .env`. |
+| Settings validation error on startup (e.g. `JWT_SIGNING_KEY: ... minimum length of '32'`) | Fix the named variable in `.env`; every invalid variable is listed. |
+| API can't connect to the database | Start it with `docker compose --env-file ../.env up -d db` in `docker/`, and check `DB_HOST`/`DB_PORT` in `.env`. |
+| `required variable DB_NAME is missing a value` | Docker Compose didn't get the root `.env`: add `--env-file ../.env` when running from `docker/`. |
+| `port is already allocated` | Another container uses that port. Pick a free `DB_PORT` or `API_PORT` in `.env`. |
 | Namespaces like `my_app.Api` | You used dashes in `-n`. Use PascalCase in `-n` and dashes only in `-o`. |
 | New project contains another project inside it | You ran `dotnet new` inside the template repo. Delete it and run from another folder. |

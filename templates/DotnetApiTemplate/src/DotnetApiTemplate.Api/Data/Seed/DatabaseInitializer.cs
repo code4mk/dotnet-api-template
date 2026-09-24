@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using DotnetApiTemplate.Api.Common.Settings;
 using DotnetApiTemplate.Api.Domain.Entities;
 using DotnetApiTemplate.Api.Domain.Enums;
 
@@ -13,6 +14,7 @@ public static class DatabaseInitializer
         await using var scope = app.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
+        var seed = scope.ServiceProvider.GetRequiredService<SeedSettings>();
         var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(DatabaseInitializer));
 
         if (db.Database.IsRelational() && db.Database.GetMigrations().Any())
@@ -24,19 +26,19 @@ public static class DatabaseInitializer
             await db.Database.EnsureCreatedAsync(cancellationToken);
         }
 
-        await SeedAdminAsync(db, hasher, app.Configuration, logger, cancellationToken);
+        await SeedAdminAsync(db, hasher, seed, logger, cancellationToken);
         await SeedProductsAsync(db, cancellationToken);
     }
 
     private static async Task SeedAdminAsync(
         AppDbContext db,
         IPasswordHasher<User> hasher,
-        IConfiguration configuration,
+        SeedSettings seed,
         ILogger logger,
         CancellationToken cancellationToken)
     {
-        var email = configuration["Seed:AdminEmail"];
-        var password = configuration["Seed:AdminPassword"];
+        var email = seed.AdminEmail;
+        var password = seed.AdminPassword;
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
