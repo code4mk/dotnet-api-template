@@ -24,6 +24,19 @@ public static class OpenApiExtensions
             });
             options.AddDocumentTransformer<BearerSecurityTransformer>();
             options.AddOperationTransformer<BearerSecurityTransformer>();
+
+            // UtcDateTimeConverter hides the type from the schema generator: describe DateTime as an ISO 8601 string.
+            options.AddSchemaTransformer((schema, context, _) =>
+            {
+                var type = context.JsonTypeInfo.Type;
+                if (type == typeof(DateTime) || type == typeof(DateTime?))
+                {
+                    schema.Type = type == typeof(DateTime?) ? JsonSchemaType.String | JsonSchemaType.Null : JsonSchemaType.String;
+                    schema.Format = "date-time";
+                }
+
+                return Task.CompletedTask;
+            });
         });
 
         return services;

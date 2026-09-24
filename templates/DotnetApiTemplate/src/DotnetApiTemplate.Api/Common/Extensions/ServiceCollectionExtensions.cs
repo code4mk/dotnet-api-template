@@ -1,8 +1,8 @@
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using DotnetApiTemplate.Api.Common.Errors;
+using DotnetApiTemplate.Api.Common.Json;
 using DotnetApiTemplate.Api.Common.Middleware;
 using DotnetApiTemplate.Api.Common.OpenApi;
 using DotnetApiTemplate.Api.Common.Settings;
@@ -37,11 +37,8 @@ public static class ServiceCollectionExtensions
         services.AddApiDocs();
         services.AddHealthChecks();
 
-        services.ConfigureHttpJsonOptions(options =>
-        {
-            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-        });
+        // Request/response bodies, ProblemDetails and OpenAPI all use these settings (see JsonDefaults).
+        services.ConfigureHttpJsonOptions(options => JsonDefaults.Configure(options.SerializerOptions));
 
         return services;
     }

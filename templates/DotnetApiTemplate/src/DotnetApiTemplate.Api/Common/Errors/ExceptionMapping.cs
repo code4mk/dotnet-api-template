@@ -20,14 +20,14 @@ internal sealed record ExceptionMapping(int StatusCode, string Code, string Deta
         OperationCanceledException when httpContext.RequestAborted.IsCancellationRequested =>
             new(ClientClosedRequest, "request_aborted", "The client closed the request.", LogLevel.Information),
 
-        BadHttpRequestException { InnerException: JsonException } bad =>
-            new(bad.StatusCode, "invalid_json", "The request body is not valid JSON for this endpoint.", LogLevel.Warning),
+        BadHttpRequestException { InnerException: JsonException json } bad =>
+            new(bad.StatusCode, "invalid_json", InvalidJsonDetail(json), LogLevel.Warning),
 
         BadHttpRequestException bad =>
             new(bad.StatusCode, BadRequestCode(bad.StatusCode), BadRequestDetail(bad), LogLevel.Warning),
 
-        JsonException =>
-            new(StatusCodes.Status400BadRequest, "invalid_json", "The request body is not valid JSON for this endpoint.", LogLevel.Warning),
+        JsonException json =>
+            new(StatusCodes.Status400BadRequest, "invalid_json", InvalidJsonDetail(json), LogLevel.Warning),
 
         DbUpdateConcurrencyException =>
             new(StatusCodes.Status409Conflict, "concurrency_conflict",
@@ -46,6 +46,15 @@ internal sealed record ExceptionMapping(int StatusCode, string Code, string Deta
             new(StatusCodes.Status500InternalServerError, "server_error",
                 "An unexpected error occurred. Please try again later.", LogLevel.Error),
     };
+
+    /// <summary>Where the JSON is wrong ($.price, line 3), without the serializer's internal message.</summary>
+    private static string InvalidJsonDetail(JsonException exception)
+    {
+        var location = exception.Path is { Length: > 1 } path ? $" at '{path}'" : string.Empty;
+        var line = exception.LineNumber is { } lineNumber ? $" (line {lineNumber + 1})" : string.Empty;
+        return $"The request body is not valid JSON for this endpoint{location}{line}. "
+            + "Check the value's type: numbers unquoted, enums by name, dates in ISO 8601, no duplicate properties.";
+    }
 
     private static string BadRequestCode(int statusCode) => statusCode switch
     {

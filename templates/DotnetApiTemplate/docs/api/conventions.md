@@ -52,10 +52,25 @@ logs for it.
 
 ## JSON
 
-- camelCase property names.
+One configuration for everything (request/response bodies, ProblemDetails, OpenAPI):
+`Common/Json/JsonDefaults.cs`. Use `JsonDefaults.Options` for any manual `JsonSerializer` call.
+
+Responses:
+
+- camelCase property names; null properties are omitted.
 - Enums as strings (`"role": "Admin"`).
-- Null properties are omitted.
-- Dates in ISO 8601 UTC.
+- Dates in ISO 8601 UTC with `Z`: `"createdAt": "2026-09-25T10:15:30.123Z"`.
+- Non-ASCII text stays readable (`"José"`, not `"Jos\u00E9"`); `<`, `>`, `&` are escaped.
+
+Requests are read strictly; these fail with `400 invalid_json` and the location (`at '$.price'`):
+
+- Numbers as strings (`"price": "49.99"`), enums as numbers (`"role": 1`), dates that aren't ISO 8601.
+- Duplicate properties (`{"name": "A", "name": "B"}`), comments, trailing commas.
+- Nesting deeper than 32 levels.
+
+Property names are case-insensitive and unknown properties are ignored. Dates with an offset
+(`+02:00`) are converted to UTC; dates without one are read as UTC. Missing or empty required fields
+are reported by validation (`400` with `errors` per field), not as `invalid_json`.
 
 ## Pagination
 

@@ -28,6 +28,20 @@ public sealed class ErrorResponseTests(ApiFactory factory) : IClassFixture<ApiFa
         await AssertProblemAsync(response, HttpStatusCode.BadRequest, "invalid_json");
     }
 
+    [Theory]
+    [InlineData("""{"name":"Keyboard","description":"x","price":"49.99","stock":2}""", "$.price")]         // number as string
+    [InlineData("""{"name":"A","name":"B","description":"x","price":49.99,"stock":2}""", "$.name")]      // duplicate property
+    public async Task PostWithAmbiguousJson_Returns400WithPath(string json, string path)
+    {
+        var client = factory.CreateAuthenticatedClient();
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await client.PostAsync("/api/products", content);
+
+        var problem = await AssertProblemAsync(response, HttpStatusCode.BadRequest, "invalid_json");
+        Assert.Contains($"at '{path}'", problem.Detail);
+    }
+
     [Fact]
     public async Task InvalidRouteValue_ReturnsNotFoundProblem()
     {
