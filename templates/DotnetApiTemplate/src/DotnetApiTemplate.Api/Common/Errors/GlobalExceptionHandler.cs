@@ -4,11 +4,14 @@ using Microsoft.AspNetCore.Mvc;
 namespace DotnetApiTemplate.Api.Common.Errors;
 
 /// <summary>
-/// Last line of defense: logs unexpected exceptions and returns a generic 500 ProblemDetails.
-/// Expected failures should be returned as <c>Result</c> errors, not thrown.
+/// Turns every unhandled exception into an RFC 7807 ProblemDetails response.
+/// Client errors (bad JSON, missing body, unique violations, ...) get a 4xx and a one-line warning;
+/// real failures get a 500 and are logged with the stack trace (see <see cref="ExceptionMapping"/>).
+/// Expected business failures should still be returned as <c>Result</c> errors, not thrown.
 /// </summary>
 internal sealed class GlobalExceptionHandler(
     IProblemDetailsService problemDetailsService,
+    IHostEnvironment environment,
     ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
@@ -16,21 +19,62 @@ internal sealed class GlobalExceptionHandler(
         Exception exception,
         CancellationToken cancellationToken)
     {
-        logger.LogError(exception, "Unhandled exception for {Method} {Path}",
-            httpContext.Request.Method, httpContext.Request.Path);
+        var mapping = ExceptionMapping.From(exception, httpContext);
+        Log(httpContext, exception, mapping);
 
-        httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        if (httpContext.Response.HasStarted)
+        {
+            // Headers are already sent; nothing more can be written. Let the server abort the response.
+            return false;
+        }
+
+        httpContext.Response.StatusCode = mapping.StatusCode;
+        if (mapping.StatusCode == ExceptionMapping.ClientClosedRequest)
+        {
+            return true;   // nobody is listening for a body
+        }
+
+        var problem = new ProblemDetails
+        {
+            Status = mapping.StatusCode,
+            Title = mapping.Code,
+            Detail = mapping.Detail,
+        };
+
+        if (environment.IsDevelopment())
+        {
+            problem.Extensions["exception"] = new
+            {
+                type = exception.GetType().FullName,
+                message = exception.Message,
+                inner = exception.InnerException?.Message,
+            };
+        }
 
         return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
         {
             HttpContext = httpContext,
             Exception = exception,
-            ProblemDetails = new ProblemDetails
-            {
-                Status = StatusCodes.Status500InternalServerError,
-                Title = "server_error",
-                Detail = "An unexpected error occurred. Please try again later."
-            }
+            ProblemDetails = problem,
         });
+    }
+
+    private void Log(HttpContext httpContext, Exception exception, ExceptionMapping mapping)
+    {
+        var method = httpContext.Request.Method;
+        var path = httpContext.Request.Path;
+
+        if (mapping.LogLevel >= LogLevel.Error)
+        {
+            // Unexpected: keep the full stack trace.
+            logger.Log(mapping.LogLevel, exception, "Unhandled exception for {Method} {Path} -> {StatusCode} {ErrorCode}",
+                method, path, mapping.StatusCode, mapping.Code);
+        }
+        else
+        {
+            // Client-caused: one line, no stack trace.
+            logger.Log(mapping.LogLevel, "Request {Method} {Path} failed -> {StatusCode} {ErrorCode}: {ExceptionType}: {ExceptionMessage}",
+                method, path, mapping.StatusCode, mapping.Code, exception.GetType().Name, exception.Message);
+        }
     }
 }

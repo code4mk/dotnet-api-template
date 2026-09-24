@@ -15,9 +15,9 @@ builder.Services.AddFeatures();                             // feature services
 var app = builder.Build();
 app.ValidateSettings();                                     // fail fast, listing every invalid env variable
 
-app.UseExceptionHandler();
-app.UseStatusCodePages();
-app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<CorrelationIdMiddleware>();               // first, so error logs and responses carry the id
+app.UseExceptionHandler();                                  // exceptions -> ProblemDetails (GlobalExceptionHandler)
+app.UseStatusCodePages();                                   // empty 4xx/5xx (e.g. 404) -> ProblemDetails
 
 if (app.Environment.IsDevelopment())
 {

@@ -7,6 +7,9 @@ namespace DotnetApiTemplate.Api.Common.Middleware;
 public sealed class CorrelationIdMiddleware(RequestDelegate next, ILogger<CorrelationIdMiddleware> logger)
 {
     public const string HeaderName = "X-Correlation-Id";
+
+    /// <summary>Name of the correlation id in ProblemDetails responses.</summary>
+    public const string ProblemDetailsKey = "correlationId";
     private const int MaxLength = 64;
 
     public async Task InvokeAsync(HttpContext context)
