@@ -1,0 +1,16 @@
+# Development image: runs `dotnet watch` against source mounted from the host.
+# Used by docker-compose.dev.yml. For production images use docker/Dockerfile.
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+WORKDIR /src
+
+# Polling is needed because file change events from a bind mount do not reach the container.
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true \
+    DOTNET_CLI_TELEMETRY_OPTOUT=true
+
+# The SDK image already sets ASPNETCORE_HTTP_PORTS=8080 (all interfaces).
+EXPOSE 8080
+
+# --non-interactive restarts the app automatically when a change can't be hot reloaded.
+# --no-launch-profile ignores launchSettings.json, which binds to localhost:5080 only.
+ENTRYPOINT ["dotnet", "watch", "--non-interactive", "--project", "src/DotnetApiTemplate.Api", "run", "--no-launch-profile"]

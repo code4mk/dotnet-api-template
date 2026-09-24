@@ -9,4 +9,6 @@ services:
 
   db:
     ports:
-      - "5432:5432"   # expose so you can connect from your IDE or run the API outside Docker
+      # Expose so you can connect from your IDE or run the API outside Docker.
+      # The host port comes from DB_PORT in .env; inside Docker the API still uses db:5432.
+      - "${DB_PORT:-54320}:5432"

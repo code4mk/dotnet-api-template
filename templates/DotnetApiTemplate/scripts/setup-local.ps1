@@ -20,7 +20,7 @@ try {
     Write-Host "Restoring and building..." -ForegroundColor Cyan
     dotnet build
 
-    Write-Host "Done. Run the API with: dotnet run --project src/DotnetApiTemplate.Api" -ForegroundColor Green
+    Write-Host "Done. Run the API with auto reload: dotnet watch --project src/DotnetApiTemplate.Api" -ForegroundColor Green
 }
 finally {
     Pop-Location

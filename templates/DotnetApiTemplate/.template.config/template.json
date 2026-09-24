@@ -39,6 +39,26 @@
       "valueTransform": "slug",
       "replaces": "dotnetapitemplate-slug",
       "description": "Lowercase, dash-separated name used for Docker image and Compose project names."
+    },
+    "dbHostPort": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 54300,
+        "high": 54999
+      },
+      "replaces": "54320",
+      "description": "Free host port for the PostgreSQL container, so projects don't clash with other databases on 5432."
+    },
+    "apiHostPort": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 18000,
+        "high": 18999
+      },
+      "replaces": "18080",
+      "description": "Free host port for the API container, so projects don't clash with other services on 8080."
     }
   },
   "sources": [

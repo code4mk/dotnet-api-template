@@ -15,9 +15,17 @@ cp .env.example .env
 docker compose up -d db
 cd ..
 
-# 2. Run the API
-dotnet run --project src/DotnetApiTemplate.Api
+# 2. Run the API with auto reload
+dotnet watch --project src/DotnetApiTemplate.Api
 ```
+
+`dotnet watch` applies most code changes to the running app when you save (hot reload). If a change
+can't be applied live, such as a changed method signature, it asks to restart; set
+`DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true` to restart without asking. Use `dotnet run` for a run without watching.
+
+PostgreSQL is published on the host port `DB_PORT` from `docker/.env` (`54320` in this project, picked
+when the project was created so it doesn't clash with other Postgres containers). To use another port,
+change `DB_PORT` and the `Port=` in `appsettings.Development.json` together.
 
 The API listens on `http://localhost:5080`. In Development it creates the database, seeds an admin
 user (`admin@example.com` / `Admin@12345`) and three sample products.
@@ -36,7 +44,24 @@ cp .env.example .env
 docker compose up --build
 ```
 
-The API is available at `http://localhost:8080`.
+The API is available at `http://localhost:18080` (`API_PORT` in `docker/.env`, picked per project). This builds the production image, so code changes
+need `docker compose up --build`.
+
+## Run everything in Docker with auto reload
+
+```bash
+cd docker
+cp .env.example .env
+docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.dev.yml up --build
+```
+
+The API runs `dotnet watch` inside an SDK container with your source mounted, at `http://localhost:18080`.
+Save a file under `src/` and the API reloads, with no image rebuild. Changes that can't be hot reloaded
+restart the app automatically. The container keeps its own `bin/` and `obj/`, so it doesn't clash with
+builds on your machine.
+
+Only rebuild (`--build`) after changing `docker/Dockerfile.dev`. Stop with the same `-f` files and
+`down` instead of `up --build`; add `-v` to also delete the database and NuGet cache volumes.
 
 ## Tests
 

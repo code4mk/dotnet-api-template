@@ -21,7 +21,7 @@ dotnet new dotnet-api-template -n NexusRE -o nexusre-backend
 | Operations | Correlation id middleware, `/health` endpoint, structured logging |
 | Samples | Auth (login), Users, Products features, `.http` request file |
 | Tests | Unit tests (EF Core in-memory) and integration tests (`WebApplicationFactory`) |
-| DevOps | Multi-stage Dockerfile, Docker Compose, GitHub Actions for CI and image publishing |
+| DevOps | Multi-stage Dockerfile, Docker Compose (with a `dotnet watch` auto-reload dev setup), GitHub Actions for CI and image publishing |
 | Docs | ADRs, architecture overview, API conventions, getting started, coding guidelines |
 
 ## Requirements
@@ -101,8 +101,8 @@ cp .env.example .env          # Windows PowerShell: Copy-Item .env.example .env
 docker compose up -d db
 cd ..
 
-# Run the API
-dotnet run --project src/NexusRE.Api
+# Run the API (reloads when you save a file)
+dotnet watch --project src/NexusRE.Api
 ```
 
 Open `http://localhost:5080/health`, or use the sample requests in `src/NexusRE.Api/NexusRE.Api.http`.
@@ -253,6 +253,7 @@ a broken version can be unlisted on nuget.org but never deleted.
 | `No templates found matching: 'dotnet-api-template'` | Install the template (step 1) and check `dotnet new list dotnet-api-template`. |
 | Can't find `.env.example` | It's a hidden file; see [Hidden files](#hidden-files). |
 | `JwtOptions` validation error on startup | Set `Jwt:SigningKey` (32+ characters). |
-| API can't connect to the database | Start it with `docker compose up -d db` in `docker/`, and check port 5432 is free. |
+| API can't connect to the database | Start it with `docker compose up -d db` in `docker/`, and check that `DB_PORT` in `docker/.env` matches the port in `appsettings.Development.json`. |
+| `port is already allocated` for the database | Another container uses that port. Pick a free one for `DB_PORT` in `docker/.env` and the same port in `appsettings.Development.json`. |
 | Namespaces like `my_app.Api` | You used dashes in `-n`. Use PascalCase in `-n` and dashes only in `-o`. |
 | New project contains another project inside it | You ran `dotnet new` inside the template repo. Delete it and run from another folder. |

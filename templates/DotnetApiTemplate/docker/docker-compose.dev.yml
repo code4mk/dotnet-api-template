@@ -1,0 +1,20 @@
+# Development with auto reload: the API runs `dotnet watch` on your mounted source.
+# Run from the docker/ folder:
+#   docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.dev.yml up --build
+# Edit files under src/ and the API reloads; no image rebuild needed.
+
+services:
+  api:
+    image: dotnetapitemplate-slug-api:dev
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    volumes:
+      - ..:/src
+      # Keep the container's build output separate from the host's bin/obj.
+      - /src/src/DotnetApiTemplate.Api/bin
+      - /src/src/DotnetApiTemplate.Api/obj
+      - nuget-cache:/root/.nuget/packages
+
+volumes:
+  nuget-cache:

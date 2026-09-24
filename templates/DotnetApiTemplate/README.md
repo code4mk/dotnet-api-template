@@ -6,8 +6,10 @@ ASP.NET Core Minimal API built on .NET 10.
 
 ```bash
 cd docker && cp .env.example .env && docker compose up -d db && cd ..
-dotnet run --project src/DotnetApiTemplate.Api
+dotnet watch --project src/DotnetApiTemplate.Api
 ```
+
+`dotnet watch` reloads the API when you save a file.
 
 Then open `src/DotnetApiTemplate.Api/DotnetApiTemplate.Api.http` in your IDE and send the sample requests, or browse
 `http://localhost:5080/openapi/v1.json`.

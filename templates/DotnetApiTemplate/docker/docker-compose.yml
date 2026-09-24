@@ -11,7 +11,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     ports:
-      - "8080:8080"
+      - "${API_PORT:-18080}:8080"   # host port from API_PORT in .env
     environment:
       ConnectionStrings__Default: "Host=db;Port=5432;Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}"
       Jwt__Issuer: "DotnetApiTemplate"
