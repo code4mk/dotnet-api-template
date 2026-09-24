@@ -1,5 +1,8 @@
 @baseUrl = http://localhost:5080
 
+### Root: welcome message, environment, version, links
+GET {{baseUrl}}/
+
 ### Health
 GET {{baseUrl}}/health
 
