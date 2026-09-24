@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
 using DotnetApiTemplate.Api.Common.Errors;
+using DotnetApiTemplate.Api.Common.Errors.Exceptions;
+using DotnetApiTemplate.Api.Common.Results;
 using DotnetApiTemplate.UnitTests.TestUtilities;
 
 namespace DotnetApiTemplate.UnitTests.Common.Errors;
@@ -102,6 +104,89 @@ public sealed class GlobalExceptionHandlerTests
         var (_, body) = await HandleAsync(new InvalidOperationException("boom"), environmentName: "Production");
 
         Assert.False(body.TryGetProperty("exception", out _));
+    }
+
+    public static TheoryData<AppException, int, string> AppExceptions => new()
+    {
+        { new NotFoundException("users.not_found", "User with id 7 was not found."), 404, "users.not_found" },
+        { NotFoundException.For("Product", 42), 404, "product.not_found" },
+        { new ConflictException("users.email_exists", "Email taken."), 409, "users.email_exists" },
+        { new ForbiddenException(), 403, "forbidden" },
+        { new UnauthorizedException(), 401, "unauthorized" },
+        { new BusinessRuleException("products.has_open_orders", "The product has open orders."), 422, "products.has_open_orders" },
+        { new RequestValidationException("orders.invalid_range", "Start must be before end."), 400, "orders.invalid_range" },
+        { new ExternalServiceException("payments.failed", "The payment provider failed."), 502, "payments.failed" },
+        { new ExternalServiceException("payments.unavailable", "Payments are unavailable.", unavailable: true), 503, "payments.unavailable" },
+    };
+
+    [Theory]
+    [MemberData(nameof(AppExceptions))]
+    public async Task AppException_UsesItsStatusCodeAndMessage(AppException exception, int expectedStatus, string expectedCode)
+    {
+        var (status, body) = await HandleAsync(exception);
+
+        Assert.Equal(expectedStatus, status);
+        Assert.Equal(expectedCode, body.GetProperty("title").GetString());
+        Assert.Equal(exception.Message, body.GetProperty("detail").GetString());
+    }
+
+    [Fact]
+    public async Task RequestValidationException_WithFieldErrors_ReturnsErrorsLikeBuiltInValidation()
+    {
+        var (status, body) = await HandleAsync(RequestValidationException.ForField("startDate", "Must be before endDate."));
+
+        Assert.Equal(400, status);
+        Assert.Equal("validation_failed", body.GetProperty("title").GetString());
+        Assert.Equal("Must be before endDate.", body.GetProperty("errors").GetProperty("startDate")[0].GetString());
+    }
+
+    [Fact]
+    public async Task RequestValidationException_WithoutFieldErrors_HasNoErrorsProperty()
+    {
+        var (_, body) = await HandleAsync(new RequestValidationException("orders.invalid_range", "Start must be before end."));
+
+        Assert.False(body.TryGetProperty("errors", out _));
+    }
+
+    [Fact]
+    public async Task ExternalServiceException_HidesInnerExceptionFromClients()
+    {
+        var inner = new HttpRequestException("connection refused to 10.0.0.5:443");
+
+        var (_, body) = await HandleAsync(new ExternalServiceException("payments.failed", "The payment provider failed.", inner));
+
+        Assert.DoesNotContain("10.0.0.5", body.GetRawText());
+    }
+
+    public static TheoryData<Error, Type, int> CatalogErrors => new()
+    {
+        { Error.Validation("x.invalid", "m"), typeof(RequestValidationException), 400 },
+        { Error.Unauthorized("x.unauthorized", "m"), typeof(UnauthorizedException), 401 },
+        { Error.Forbidden("x.forbidden", "m"), typeof(ForbiddenException), 403 },
+        { Error.NotFound("x.not_found", "m"), typeof(NotFoundException), 404 },
+        { Error.Conflict("x.conflict", "m"), typeof(ConflictException), 409 },
+        { Error.BusinessRule("x.rule", "m"), typeof(BusinessRuleException), 422 },
+    };
+
+    [Theory]
+    [MemberData(nameof(CatalogErrors))]
+    public void ErrorToException_KeepsCodeMessageAndStatus(Error error, Type expectedType, int expectedStatus)
+    {
+        var exception = error.ToException();
+
+        Assert.IsType(expectedType, exception);
+        Assert.Equal(error.Code, exception.Code);
+        Assert.Equal(error.Message, exception.Message);
+        Assert.Equal(expectedStatus, exception.StatusCode);
+        Assert.Equal(error.Type.ToStatusCode(), exception.StatusCode);   // same status as returning the Result
+    }
+
+    [Fact]
+    public void ErrorToException_ForValidation_HasNoFieldErrors()
+    {
+        var exception = Assert.IsType<RequestValidationException>(Error.Validation("x.invalid", "Invalid.").ToException());
+
+        Assert.Empty(exception.Errors);
     }
 
     private static async Task<(int Status, JsonElement Body)> HandleAsync(

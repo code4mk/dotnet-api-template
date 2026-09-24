@@ -11,18 +11,9 @@ public static class ResultExtensions
         }
 
         var error = result.Error;
-        var statusCode = error.Type switch
-        {
-            ErrorType.Validation => StatusCodes.Status400BadRequest,
-            ErrorType.NotFound => StatusCodes.Status404NotFound,
-            ErrorType.Conflict => StatusCodes.Status409Conflict,
-            ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
-            ErrorType.Forbidden => StatusCodes.Status403Forbidden,
-            _ => StatusCodes.Status500InternalServerError
-        };
 
         return TypedResults.Problem(
-            statusCode: statusCode,
+            statusCode: error.Type.ToStatusCode(),
             title: error.Code,
             detail: error.Message);
     }

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using DotnetApiTemplate.Api.Common.Errors.Exceptions;
 
 namespace DotnetApiTemplate.Api.Common.Errors;
 
@@ -17,6 +18,11 @@ internal sealed record ExceptionMapping(int StatusCode, string Code, string Deta
     /// </summary>
     public static ExceptionMapping From(Exception exception, HttpContext httpContext) => exception switch
     {
+        // Thrown on purpose (NotFoundException, ConflictException, ...): the message is meant for clients.
+        // 4xx are expected outcomes (Information); 5xx (external services) are logged with the stack trace.
+        AppException app =>
+            new(app.StatusCode, app.Code, app.Message, app.StatusCode >= StatusCodes.Status500InternalServerError ? LogLevel.Error : LogLevel.Information),
+
         OperationCanceledException when httpContext.RequestAborted.IsCancellationRequested =>
             new(ClientClosedRequest, "request_aborted", "The client closed the request.", LogLevel.Information),
 

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using DotnetApiTemplate.Api.Common.Errors.Exceptions;
 
 namespace DotnetApiTemplate.Api.Common.Errors;
 
@@ -34,12 +35,13 @@ internal sealed class GlobalExceptionHandler(
             return true;   // nobody is listening for a body
         }
 
-        var problem = new ProblemDetails
-        {
-            Status = mapping.StatusCode,
-            Title = mapping.Code,
-            Detail = mapping.Detail,
-        };
+        // Field errors use the same "errors" shape as built-in validation.
+        var problem = exception is RequestValidationException { Errors.Count: > 0 } validation
+            ? new HttpValidationProblemDetails(validation.Errors.ToDictionary())
+            : new ProblemDetails();
+        problem.Status = mapping.StatusCode;
+        problem.Title = mapping.Code;
+        problem.Detail = mapping.Detail;
 
         if (environment.IsDevelopment())
         {

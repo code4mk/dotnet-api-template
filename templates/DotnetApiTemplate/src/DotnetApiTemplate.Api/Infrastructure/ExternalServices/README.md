@@ -23,4 +23,6 @@ services.AddHttpClient<IPaymentClient, PaymentClient>((sp, client) =>
 ```
 
 Rules: never expose external DTOs outside this folder; map them to your own types.
+When the external service fails, throw `ExternalServiceException` (502, or 503 with `unavailable: true`)
+with a safe message and the original exception as the inner exception.
 Keep API keys in `.env` or real environment variables, never in `appsettings.json` or the committed `.env.*` presets.

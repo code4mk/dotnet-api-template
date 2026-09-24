@@ -20,6 +20,8 @@
 | Not allowed | `403 Forbidden` | none |
 | Not found | `404 Not Found` | `ProblemDetails` |
 | Conflict (duplicate, state) | `409 Conflict` | `ProblemDetails` (also for database unique/foreign-key violations) |
+| Business rule not met | `422 Unprocessable Entity` | `ProblemDetails` |
+| External service failed | `502 Bad Gateway` / `503` | `ProblemDetails` with a safe message |
 | Server error | `500` | generic `ProblemDetails`, title `server_error` (no internals) |
 
 Error `title` is a stable machine-readable code such as `products.not_found`; `detail` is human-readable.
@@ -40,15 +42,48 @@ logs for it.
 
 ### Errors in code
 
-- **Expected failures** (not found, duplicate, not allowed) are returned as `Result` errors from services
-  and converted with `ToProblem()`. Don't throw for them.
-- **Everything thrown** ends in `Common/Errors/GlobalExceptionHandler`. `ExceptionMapping` decides the
+Each feature keeps its errors in one catalog, next to the service:
+
+```csharp
+public static class ProductErrors
+{
+    public static Error NotFound(int id) =>
+        Error.NotFound("products.not_found", $"Product with id {id} was not found.");
+
+    public static Error HasOpenOrders(int id) =>
+        Error.BusinessRule("products.has_open_orders", $"Product {id} has open orders and can't be deleted.");
+}
+```
+
+There are two ways to use a catalog error, and both give the **same** response:
+
+| Where | How |
+| --- | --- |
+| Services (preferred) | `return ProductErrors.NotFound(id);`, then `result.ToProblem()` in the endpoint |
+| Deep helpers, domain entities, code that can't return a `Result` | `throw ProductErrors.NotFound(id).ToException();` |
+
+Ready-made exceptions (`Common/Errors/Exceptions/`) for cases without a catalog entry:
+
+| Exception | Status | Example |
+| --- | --- | --- |
+| `RequestValidationException` | 400 | `throw RequestValidationException.ForField("startDate", "Must be before endDate.");` (sends `errors` like built-in validation) |
+| `UnauthorizedException` | 401 | `throw new UnauthorizedException();` |
+| `ForbiddenException` | 403 | `throw new ForbiddenException("orders.not_owner", "You can only change your own orders.");` |
+| `NotFoundException` | 404 | `throw NotFoundException.For("Product", id);` → `product.not_found` |
+| `ConflictException` | 409 | `throw new ConflictException("orders.already_paid", "The order is already paid.");` |
+| `BusinessRuleException` | 422 | `throw new BusinessRuleException("products.has_open_orders", "...");` |
+| `ExternalServiceException` | 502 / 503 | `throw new ExternalServiceException("payments.failed", "The payment provider failed.", ex);` |
+
+Their message is sent to clients, so keep internals out of it; pass the original exception as the inner
+exception instead (it is logged, never returned). Thrown 4xx are logged as information, 5xx with the stack trace.
+
+- **Everything else thrown** ends in `Common/Errors/GlobalExceptionHandler` too. `ExceptionMapping` decides the
   status, code, safe message and log level: client-caused errors (bad JSON, missing body, unique
   violations, aborted requests) are 4xx and logged as one-line warnings; anything unknown is a `500`
   logged with its stack trace. Add a case to `ExceptionMapping` when a library throws for what is
   really a client error.
 - In Development the response also contains an `exception` object (type and message). Production
-  never returns exception messages.
+  never returns the messages of unexpected exceptions; only the `AppException` messages you write are sent.
 
 ## JSON
 
