@@ -1,0 +1,10 @@
+[Bb]in/
+[Oo]bj/
+.vs/
+.idea/
+*.user
+*.nupkg
+artifacts/
+TestResults/
+.DS_Store
+Thumbs.db

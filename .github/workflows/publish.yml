@@ -1,0 +1,41 @@
+name: publish
+
+# Publishes the template to nuget.org when you push a tag like v1.2.0.
+# Requires the repository secret NUGET_API_KEY (nuget.org API key, Push scope, glob Code4mk.*).
+# Automatic trigger is disabled; run it manually from the Actions tab.
+# Uncomment push to publish on version tags again.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Package version to publish, e.g. 1.2.0"
+        required: true
+  # push:
+  #   tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Pack
+        run: |
+          VERSION="${{ inputs.version }}"
+          VERSION="${VERSION:-${GITHUB_REF_NAME#v}}"
+          dotnet pack TemplatePack.csproj --configuration Release --output artifacts -p:PackageVersion=$VERSION
+
+      - name: Push to nuget.org
+        run: >
+          dotnet nuget push "artifacts/*.nupkg"
+          --source "https://api.nuget.org/v3/index.json"
+          --api-key "${{ secrets.NUGET_API_KEY }}"
+          --skip-duplicate

@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Code4mk",
+  "classifications": ["Web", "API", "Minimal API", "Solution"],
+  "identity": "Code4mk.MinimalApi.Template",
+  "name": "Code4mk Minimal API Solution",
+  "description": "ASP.NET Core Minimal API solution with feature folders, service layer, EF Core (PostgreSQL), JWT auth, Docker, tests and docs.",
+  "shortName": "dotnet-api-template",
+  "sourceName": "DotnetApiTemplate",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "solution"
+  },
+  "guids": [
+    "B9BE3F8C-6685-44CF-9583-A9DF291682DC",
+    "93F0257E-87DF-4DD4-A882-B8C78BB5BEEA",
+    "FF09C328-0507-493D-B21E-5ED5DA33856C",
+    "4F6C2A8E-1B3D-4E5F-9A7B-2C8D0E1F3A5B"
+  ],
+  "forms": {
+    "nonAlphanumericToDash": {
+      "identifier": "replace",
+      "pattern": "[^A-Za-z0-9]+",
+      "replacement": "-"
+    },
+    "lowerInvariant": {
+      "identifier": "lowerCaseInvariant"
+    },
+    "slug": {
+      "identifier": "chain",
+      "steps": ["nonAlphanumericToDash", "lowerInvariant"]
+    }
+  },
+  "symbols": {
+    "projectSlug": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "slug",
+      "replaces": "dotnetapitemplate-slug",
+      "description": "Lowercase, dash-separated name used for Docker image and Compose project names."
+    }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            "**/[Bb]in/**",
+            "**/[Oo]bj/**",
+            "**/.vs/**",
+            "**/.idea/**",
+            "**/*.user",
+            "**/TestResults/**",
+            ".git/**",
+            ".template.config/**",
+            "docker/.env"
+          ]
+        }
+      ]
+    }
+  ]
+}

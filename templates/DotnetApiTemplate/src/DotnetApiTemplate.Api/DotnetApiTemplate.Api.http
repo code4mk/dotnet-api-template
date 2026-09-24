@@ -1,0 +1,43 @@
+@baseUrl = http://localhost:5080
+
+### Health
+GET {{baseUrl}}/health
+
+### Login as the seeded admin (Development only)
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "Admin@12345"
+}
+
+### List products (anonymous)
+GET {{baseUrl}}/api/products?page=1&pageSize=10
+
+### Create product (requires token)
+POST {{baseUrl}}/api/products
+Authorization: Bearer {{login.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Keyboard",
+  "description": "Mechanical keyboard",
+  "price": 49.99,
+  "stock": 25
+}
+
+### Register a user (anonymous)
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "fullName": "Jane Doe",
+  "email": "jane@example.com",
+  "password": "Password@123"
+}
+
+### List users (requires token)
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{login.response.body.accessToken}}

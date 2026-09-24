@@ -1,0 +1,30 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+publish/
+artifacts/
+
+# IDE
+.vs/
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.user
+*.suo
+*.DotSettings.user
+
+# Test results
+TestResults/
+coverage*.xml
+*.trx
+
+# Secrets and environment
+.env
+appsettings.*.local.json
+*.pfx
+
+# OS
+.DS_Store
+Thumbs.db

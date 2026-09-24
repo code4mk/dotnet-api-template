@@ -1,0 +1,44 @@
+name: template-ci
+
+# Proves the template still works: install it, create a project, build and test that project.
+# Automatic triggers are disabled; run it manually from the Actions tab.
+# Uncomment push/pull_request to run on every push and PR again.
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  # pull_request:
+  #   branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install template from source
+        run: dotnet new install ./templates/DotnetApiTemplate
+
+      - name: Create a sample project
+        run: dotnet new dotnet-api-template -n Sample.Project -o "$RUNNER_TEMP/sample"
+
+      - name: Build and test the sample project
+        working-directory: ${{ runner.temp }}/sample
+        run: |
+          dotnet build --configuration Release
+          dotnet test --configuration Release --no-build
+
+      - name: Check that no placeholder names are left
+        working-directory: ${{ runner.temp }}/sample
+        run: |
+          if grep -rIi --exclude-dir=bin --exclude-dir=obj "dotnetapitemplate" .; then
+            echo "Found leftover DotnetApiTemplate placeholder"; exit 1
+          fi
+
+      - name: Pack the template
+        run: dotnet pack TemplatePack.csproj --configuration Release --output artifacts

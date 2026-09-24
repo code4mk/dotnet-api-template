@@ -1,0 +1,12 @@
+# Local development overrides. Docker Compose merges this file automatically.
+
+services:
+  api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Seed__AdminEmail: "${SEED_ADMIN_EMAIL}"
+      Seed__AdminPassword: "${SEED_ADMIN_PASSWORD}"
+
+  db:
+    ports:
+      - "5432:5432"   # expose so you can connect from your IDE or run the API outside Docker

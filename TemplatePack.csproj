@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Packs templates/DotnetApiTemplate into a NuGet template package: dotnet pack -->
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageId>Code4mk.MinimalApi.Template</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Title>Dotnet Minimal API Template</Title>
+    <Authors>Code4mk</Authors>
+    <Description>ASP.NET Core Minimal API solution template: feature folders, service layer, EF Core, JWT, Docker, tests and docs.</Description>
+    <PackageTags>dotnet-new;templates;minimal-api;aspnetcore</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/code4mk/dotnet-api-template</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/code4mk/dotnet-api-template.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryBranch>main</RepositoryBranch>
+
+    <TargetFramework>net10.0</TargetFramework>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <NoWarn>$(NoWarn);NU5128;NU5110;NU5111</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="templates/**/*"
+             Exclude="templates/**/bin/**;templates/**/obj/**;templates/**/.vs/**;templates/**/TestResults/**" />
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+</Project>
