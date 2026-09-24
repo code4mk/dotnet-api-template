@@ -16,7 +16,7 @@ dotnet new dotnet-api-template -n NexusRE -o nexusre-backend
 | Structure | Feature folders with a service layer (`Endpoints`, `IService`, `Service`, `Dtos`, `Mappings`) |
 | Errors | `Result<T>` pattern, RFC 7807 ProblemDetails, global exception handler |
 | Validation | .NET 10 built-in validation with data annotations on request DTOs |
-| Data | EF Core with PostgreSQL, entity configurations, development seed data |
+| Data | EF Core with PostgreSQL, entity configurations, `InitialCreate` migration (applied manually, never at startup) |
 | Security | JWT bearer authentication, Admin policy, password hashing |
 | Email | Typed emails with Scriban templates, shared layout, CSS inlining (PreMailer.Net), MailKit SMTP, Mailpit inbox for local development |
 | Operations | Correlation id middleware, `/health` endpoint, structured logging |
@@ -102,21 +102,23 @@ dotnet test
 cp .env.example .env          # Windows PowerShell: Copy-Item .env.example .env
 docker compose up -d db mailpit
 
+# Create the tables (the API never changes the database schema on its own)
+dotnet tool restore
+dotnet ef database update --project src/NexusRE.Api
+
 # Run the API (reloads when you save a file)
 dotnet watch --project src/NexusRE.Api
 ```
 
 Open Swagger UI at `http://localhost:5080/swagger`, or use the sample requests in `src/NexusRE.Api/NexusRE.Api.http`.
-In Development the API creates the database and seeds:
-
-- Admin user: `admin@example.com` / `Admin@12345`
-- Three sample products
+The database starts empty: register a user with `POST /api/users`, then log in with `POST /api/auth/login`.
 
 Then:
 
 1. **Create the Git repo:** `git init`, commit, and push to a new GitHub repo named like the folder (`nexusre-backend`).
-2. **Create the first migration:** `dotnet tool restore`, then
-   `dotnet ef migrations add InitialCreate --project src/NexusRE.Api --output-dir Data/Migrations`.
+2. **Change the model with migrations:** after changing entities, run
+   `dotnet ef migrations add <Name> --project src/NexusRE.Api --output-dir Data/Migrations`, review the
+   generated code, then `dotnet ef database update --project src/NexusRE.Api`.
 3. **Set real secrets** for anything beyond your machine (see below).
 4. **Remove sample features** you don't need, or copy `Features/Products` to start a new feature.
 5. **Update the project README** with what the service does.
@@ -135,7 +137,7 @@ Windows Explorer: `.env.example` (and your `.env`), `.gitignore`, `.editorconfig
 
 ## Secrets and configuration
 
-Database, JWT and seed settings live in dotenv files at the project root. The API and Docker Compose
+Database, JWT and email settings live in dotenv files at the project root. The API and Docker Compose
 read only `.env`. A new project contains only `.env.example`, the one env file that is committed
 (`.gitignore` ignores `.env` and every `.env.*` except it); create `.env` from it before the first run.
 
@@ -151,7 +153,6 @@ read only `.env`. A new project contains only `.env.example`, the one env file t
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL connection; `DB_PORT` is also the host port Docker publishes |
 | `API_PORT` | host port of the API container |
 | `JWT_SIGNING_KEY` | JWT signing key, 32+ characters |
-| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | admin user seeded in Development |
 
 On a server: create `.env` from `.env.example` with `APP_ENV=prod` and real values (never the
 development defaults), or set the same variables in the platform's environment or secret store;

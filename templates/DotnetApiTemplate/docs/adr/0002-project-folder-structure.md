@@ -21,7 +21,7 @@ Every project uses this layout (see the repository root for the full tree):
 src/DotnetApiTemplate.Api/
 ├── Features/<Feature>/     // Endpoints, IService, Service, Dtos, Mappings
 ├── Domain/                 // entities, enums, base types
-├── Data/                   // AppDbContext, configurations, migrations, seed
+├── Data/                   // AppDbContext, configurations, migrations
 ├── Infrastructure/         // authentication, email, external services
 └── Common/                 // errors, middleware, results, pagination, extensions
 ```

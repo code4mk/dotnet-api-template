@@ -53,7 +53,6 @@ public static class ServiceCollectionExtensions
 
         services.AddEnvSettings<AppSettings>(configuration);
         services.AddEnvSettings<DatabaseSettings>(configuration);
-        services.AddEnvSettings<SeedSettings>(configuration);
 
         services.AddDbContext<AppDbContext>((sp, options) =>
             options.UseNpgsql(sp.GetRequiredService<DatabaseSettings>().ConnectionString));

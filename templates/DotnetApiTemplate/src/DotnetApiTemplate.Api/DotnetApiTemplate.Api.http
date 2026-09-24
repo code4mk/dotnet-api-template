@@ -6,14 +6,24 @@ GET {{baseUrl}}/
 ### Health
 GET {{baseUrl}}/health
 
-### Login as the seeded admin (Development only)
+### 1. Register a user (anonymous)
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "fullName": "Jane Doe",
+  "email": "jane@example.com",
+  "password": "Password@123"
+}
+
+### 2. Login with that user; the token is used by the requests below
 # @name login
 POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@example.com",
-  "password": "Admin@12345"
+  "email": "jane@example.com",
+  "password": "Password@123"
 }
 
 ### List products (anonymous)
@@ -29,16 +39,6 @@ Content-Type: application/json
   "description": "Mechanical keyboard",
   "price": 49.99,
   "stock": 25
-}
-
-### Register a user (anonymous)
-POST {{baseUrl}}/api/users
-Content-Type: application/json
-
-{
-  "fullName": "Jane Doe",
-  "email": "jane@example.com",
-  "password": "Password@123"
 }
 
 ### List users (requires token)

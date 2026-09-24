@@ -8,7 +8,7 @@
 
 ## Environment files
 
-All settings (database, JWT, email, seed data) live in dotenv files at the repository root:
+All settings (database, JWT, email) live in dotenv files at the repository root:
 
 | File | Committed | Purpose |
 | --- | --- | --- |
@@ -30,7 +30,6 @@ e.g. `cp .env.prod .env` on a server.
 | `JWT_SIGNING_KEY` | JWT signing key, at least 32 characters. Optional: `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_EXPIRY_MINUTES`. |
 | `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_ENABLE_SSL`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`, `EMAIL_FROM`, `EMAIL_FROM_NAME` | SMTP. Development sends to Mailpit (`EMAIL_PORT` is its host port); empty `EMAIL_HOST` only logs emails. |
 | `MAILPIT_UI_PORT` | Host port of the Mailpit inbox (`28025` in this project). |
-| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | Admin user seeded in Development. |
 
 The API loads `.env` at startup with [DotNetEnv](https://github.com/tonerdo/dotnet-env)
 (`Common/Settings/EnvFile.cs`). Variables already set in the environment (Docker, CI, your shell) win
@@ -57,7 +56,7 @@ public sealed class DatabaseSettings
 
 Register it with `services.AddEnvSettings<DatabaseSettings>(configuration)` and inject it directly
 (`DatabaseSettings settings`) or as `IOptions<DatabaseSettings>`. Existing classes: `AppSettings`
-(`APP_ENV`, with `IsDev`/`IsStage`/`IsProd`), `DatabaseSettings`, `SeedSettings` in `Common/Settings/`,
+(`APP_ENV`, with `IsDev`/`IsStage`/`IsProd`), `DatabaseSettings` in `Common/Settings/`,
 `JwtSettings` and `EmailSettings` in `Infrastructure/`.
 
 All settings classes are validated when the app starts, and every problem is reported at once with
@@ -90,7 +89,11 @@ To add a setting: add the variable to `.env.example` (committed, so others see i
 cp .env.example .env
 docker compose up -d db mailpit
 
-# 2. Run the API with auto reload
+# 2. Create the tables (once, and after pulling new migrations)
+dotnet tool restore
+dotnet ef database update --project src/DotnetApiTemplate.Api
+
+# 3. Run the API with auto reload
 dotnet watch --project src/DotnetApiTemplate.Api
 ```
 
@@ -98,8 +101,9 @@ dotnet watch --project src/DotnetApiTemplate.Api
 can't be applied live, such as a changed method signature, it asks to restart; set
 `DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true` to restart without asking. Use `dotnet run` for a run without watching.
 
-The API listens on `http://localhost:5080`. In Development it creates the database, seeds an admin
-user (`admin@example.com` / `Admin@12345`) and three sample products.
+The API listens on `http://localhost:5080`. It doesn't create tables or seed data: step 2 creates the
+schema, and the database starts empty. Register a user with `POST /api/users`, then log in with
+`POST /api/auth/login`.
 
 - Swagger UI: `http://localhost:5080/swagger` (log in with `POST /api/auth/login`, then **Authorize** with
   the `accessToken`; endpoints with a lock need it)
@@ -205,12 +209,33 @@ Unit tests use the EF Core in-memory provider. Integration tests start the API i
 
 ## Database migrations
 
+The API **never** creates or changes the database schema at startup, and it seeds no data. You apply
+migrations yourself, so every schema change is reviewed and deliberate. The project ships with an
+`InitialCreate` migration (users and products tables).
+
 ```bash
-dotnet tool restore
-dotnet ef migrations add InitialCreate --project src/DotnetApiTemplate.Api --output-dir Data/Migrations
+dotnet tool restore                                           # once: installs dotnet-ef
+
+# Apply all pending migrations to the database in .env (DB_*)
+dotnet ef database update --project src/DotnetApiTemplate.Api
+
+# After changing an entity or configuration: create a migration, review it, then apply it
+dotnet ef migrations add AddProductSku --project src/DotnetApiTemplate.Api --output-dir Data/Migrations
+dotnet ef database update --project src/DotnetApiTemplate.Api
+
+# Undo the last migration that is not applied yet
+dotnet ef migrations remove --project src/DotnetApiTemplate.Api
+
+# Production: generate an idempotent SQL script, review it and run it in your deployment
+dotnet ef migrations script --idempotent --project src/DotnetApiTemplate.Api --output migrations.sql
 ```
 
-Until the first migration exists, Development uses `EnsureCreated`. After that it applies migrations.
+`dotnet ef` reads the database settings from `.env` like the API does. On Windows you can also use
+`./scripts/add-migration.ps1` and `./scripts/update-database.ps1`.
+
+**Starting with an empty database:** register a user with `POST /api/users` and log in with
+`POST /api/auth/login`. To make someone an admin (needed only for `DELETE /api/users/{id}`), update
+the row directly: `UPDATE "Users" SET "Role" = 'Admin' WHERE "Email" = 'you@example.com';`
 
 ## Secrets
 

@@ -1,16 +1,20 @@
 # Migrations
 
-EF Core migrations are generated into this folder.
+EF Core migrations live in this folder. `InitialCreate` creates the users and products tables.
 
-Create the first migration from the repository root:
+The API never applies migrations at startup. Apply them yourself from the repository root:
 
 ```bash
 dotnet tool restore
-dotnet ef migrations add InitialCreate --project src/DotnetApiTemplate.Api --output-dir Data/Migrations
+dotnet ef database update --project src/DotnetApiTemplate.Api
 ```
 
-Or use the helper script: `./scripts/add-migration.ps1 -Name InitialCreate`.
+After changing an entity or configuration, add a migration, review the generated code, then apply it:
 
-Until a migration exists, the Development startup creates the schema with
-`EnsureCreated` so you can run the app immediately. Once you add migrations,
-startup applies them with `Migrate` instead.
+```bash
+dotnet ef migrations add <Name> --project src/DotnetApiTemplate.Api --output-dir Data/Migrations
+dotnet ef database update --project src/DotnetApiTemplate.Api
+```
+
+Or use the helper scripts: `./scripts/add-migration.ps1 -Name <Name>` and `./scripts/update-database.ps1`.
+For production, generate a reviewed SQL script with `dotnet ef migrations script --idempotent`.

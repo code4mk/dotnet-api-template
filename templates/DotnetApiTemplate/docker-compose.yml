@@ -11,7 +11,7 @@ name: dotnetapitemplate-slug
 
 # Shared by both API services. Inside Docker the API reaches PostgreSQL through the Compose network.
 x-api: &api
-  env_file: .env                   # APP_ENV, DB_*, JWT_*, EMAIL_*, SEED_*
+  env_file: .env                   # APP_ENV, DB_*, JWT_*, EMAIL_*
   ports:
     - "${API_PORT:-18080}:8080"
   depends_on:

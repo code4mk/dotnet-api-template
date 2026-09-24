@@ -2,7 +2,6 @@ using DotnetApiTemplate.Api.Common.Extensions;
 using DotnetApiTemplate.Api.Common.Middleware;
 using DotnetApiTemplate.Api.Common.OpenApi;
 using DotnetApiTemplate.Api.Common.Settings;
-using DotnetApiTemplate.Api.Data.Seed;
 
 EnvFile.Load();                                             // root .env -> environment variables, APP_ENV -> environment
 
@@ -22,7 +21,6 @@ app.UseStatusCodePages();                                   // empty 4xx/5xx (e.
 if (app.Environment.IsDevelopment())
 {
     app.MapApiDocs();                                       // /openapi/v1.json and Swagger UI at /swagger
-    await app.InitializeDatabaseAsync();
 }
 
 app.UseAuthentication();
