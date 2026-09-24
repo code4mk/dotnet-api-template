@@ -1,10 +1,11 @@
+using DotnetApiTemplate.Api.Common.Features;
 using DotnetApiTemplate.Api.Common.Results;
 
 namespace DotnetApiTemplate.Api.Features.Auth;
 
-public static class AuthEndpoints
+public sealed class AuthEndpoints : IEndpoints
 {
-    public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder api)
+    public void MapEndpoints(IEndpointRouteBuilder api)
     {
         var group = api.MapGroup("/auth")
             .WithTags("Auth")
@@ -14,8 +15,6 @@ public static class AuthEndpoints
             .WithName("Login")
             .WithSummary("Get an access token.")
             .ProducesValidationProblem();
-
-        return api;
     }
 
     private static async Task<Results<Ok<LoginResponse>, ProblemHttpResult>> Login(

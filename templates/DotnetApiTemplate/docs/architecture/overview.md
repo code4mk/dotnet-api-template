@@ -36,5 +36,8 @@ flowchart LR
 - Observability: `X-Correlation-Id` on every response and in the log scope; `/health` endpoint.
 - Configuration: environment variables / `.env`, typed settings validated at startup.
 - Database: schema changes only through migrations applied manually; nothing runs at startup.
+- Feature wiring: manual by default, or auto-discovery of `IEndpoints` classes and `XService : IXService`
+  (`Common/Features/FeatureDiscovery.cs`); a route snapshot test guards the route table in both modes.
+- Dependency injection is validated at startup (`ValidateOnBuild`, `ValidateScopes`) in every environment.
 
 Developer guides for each topic: [docs/README.md](../README.md).

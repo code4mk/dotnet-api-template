@@ -1,12 +1,13 @@
+using DotnetApiTemplate.Api.Common.Features;
 using DotnetApiTemplate.Api.Common.Pagination;
 using DotnetApiTemplate.Api.Common.Results;
 using DotnetApiTemplate.Api.Infrastructure.Authentication;
 
 namespace DotnetApiTemplate.Api.Features.Users;
 
-public static class UserEndpoints
+public sealed class UserEndpoints : IEndpoints
 {
-    public static IEndpointRouteBuilder MapUserEndpoints(this IEndpointRouteBuilder api)
+    public void MapEndpoints(IEndpointRouteBuilder api)
     {
         var group = api.MapGroup("/users")
             .WithTags("Users");
@@ -34,8 +35,6 @@ public static class UserEndpoints
             .WithName("DeleteUser")
             .WithSummary("Delete a user (admin only).")
             .RequireAuthorization(Policies.Admin);
-
-        return api;
     }
 
     private static async Task<Ok<PagedResponse<UserResponse>>> GetAll(

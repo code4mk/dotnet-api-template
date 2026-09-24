@@ -1,0 +1,13 @@
+ANY /health | public | -
+DELETE /api/products/{id:int} | auth | ProductEndpoints
+DELETE /api/users/{id:int} | policy:Admin | UserEndpoints
+GET / | public | -
+GET /api/products/ | public | ProductEndpoints
+GET /api/products/{id:int} | public | ProductEndpoints
+GET /api/users/ | auth | UserEndpoints
+GET /api/users/{id:int} | auth | UserEndpoints
+POST /api/auth/login | public | AuthEndpoints
+POST /api/products/ | auth | ProductEndpoints
+POST /api/users/ | public | UserEndpoints
+PUT /api/products/{id:int} | auth | ProductEndpoints
+PUT /api/users/{id:int} | auth | UserEndpoints

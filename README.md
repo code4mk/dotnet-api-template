@@ -13,7 +13,7 @@ dotnet new dotnet-api-template -n NexusRE -o nexusre-backend
 | Area | Included |
 | --- | --- |
 | API | .NET 10 Minimal APIs, route groups, `TypedResults`, OpenAPI with Swagger UI (JWT **Authorize**) in Development |
-| Structure | Feature folders with a service layer (`Endpoints`, `IService`, `Service`, `Dtos`, `Mappings`) |
+| Structure | Feature folders with a service layer (`Endpoints`, `IService`, `Service`, `Dtos`, `Mappings`); manual or automatic feature registration (`--auto-discovery`) |
 | Errors | `Result<T>` pattern, RFC 7807 ProblemDetails, global exception handler |
 | Validation | .NET 10 built-in validation with data annotations on request DTOs |
 | Data | EF Core with PostgreSQL, entity configurations, `InitialCreate` migration (applied manually, never at startup) |
@@ -69,6 +69,12 @@ dotnet new dotnet-api-template -n NexusRE -o nexusre-backend
 - `-o` is the **folder / Git repo name**. Use lowercase with dashes, for example `nexusre-backend`.
 
 Do not put dashes in `-n`. `-n nexusre-backend` produces namespaces like `nexusre_backend.Api`.
+
+Options:
+
+| Option | Default | Effect |
+| --- | --- | --- |
+| `--auto-discovery true` | `false` | Feature endpoints (`IEndpoints` classes) and services (`XService : IXService`) are found automatically, in any folder under `Features/`. With `false` you add one line per feature in `AddFeatures()` and `MapFeatures()`. Can be switched later in `Common/Features/FeatureDiscovery.cs`. |
 
 The result:
 

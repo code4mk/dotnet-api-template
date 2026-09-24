@@ -126,6 +126,23 @@ Tips:
 - **Replace a service:** in `ApiFactory.ConfigureTestServices`, `services.RemoveAll<IPaymentClient>();`
   then `services.AddSingleton<IPaymentClient>(new FakePaymentClient());`.
 
+## Route snapshot and wiring tests
+
+Two guards run in every project, in both wiring modes ([manual or auto-discovery](adding-a-feature.md#10-register-and-map)):
+
+- `FeatureWiringTests` (unit): every `I...Service` under `Features/` is registered as scoped.
+- `RouteTests` (integration): every `IEndpoints` class is mapped, and the route table matches
+  `Common/routes.snapshot.txt` (method, route, `public` / `auth` / `policy:X`, feature).
+
+When you add, remove or change the access of a route, the snapshot test fails and prints the new list.
+Review it, then update and commit the file:
+
+```bash
+UPDATE_SNAPSHOTS=1 dotnet test --filter "FullyQualifiedName~RouteTests"
+```
+
+The snapshot makes every new public endpoint visible in code review.
+
 ## What to test where
 
 | Behavior | Test type |

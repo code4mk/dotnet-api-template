@@ -13,6 +13,9 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        auto-discovery: [false, true]   # both feature wiring modes
 
     steps:
       - uses: actions/checkout@v4
@@ -25,7 +28,7 @@ jobs:
         run: dotnet new install ./templates/DotnetApiTemplate
 
       - name: Create a sample project
-        run: dotnet new dotnet-api-template -n Sample.Project -o "$RUNNER_TEMP/sample"
+        run: dotnet new dotnet-api-template -n Sample.Project -o "$RUNNER_TEMP/sample" --auto-discovery ${{ matrix.auto-discovery }}
 
       - name: Build and test the sample project
         working-directory: ${{ runner.temp }}/sample

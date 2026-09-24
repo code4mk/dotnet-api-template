@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using DotnetApiTemplate.Api.Common.Cors;
 using DotnetApiTemplate.Api.Common.Errors;
+using DotnetApiTemplate.Api.Common.Features;
 using DotnetApiTemplate.Api.Common.Json;
 using DotnetApiTemplate.Api.Common.Middleware;
 using DotnetApiTemplate.Api.Common.OpenApi;
@@ -64,12 +65,28 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    /// <summary>Feature services. Add one line per new feature.</summary>
+    /// <summary>
+    /// Feature services. Manual mode (default): one line per service. With
+    /// <see cref="FeatureDiscovery.AutoDiscovery"/>, every <c>XService : IXService</c> in Features/ is added (scoped).
+    /// </summary>
     public static IServiceCollection AddFeatures(this IServiceCollection services)
     {
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IProductService, ProductService>();
+        if (FeatureDiscovery.AutoDiscovery)
+        {
+            foreach (var (service, implementation) in FeatureDiscovery.ServiceTypes)
+            {
+                services.TryAddScoped(service, implementation);
+            }
+        }
+        else
+        {
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IProductService, ProductService>();
+        }
+
+        // Both modes: register here what doesn't fit the XService : IXService convention
+        // (singletons, classes with several interfaces, ...).
 
         return services;
     }

@@ -33,6 +33,25 @@
     }
   },
   "symbols": {
+    "autoDiscovery": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Find feature endpoints (IEndpoints) and services (XService : IXService) automatically instead of registering them by hand."
+    },
+    "autoDiscoverySwitch": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "AutoDiscovery = false",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          { "condition": "(autoDiscovery)", "value": "AutoDiscovery = true" },
+          { "condition": "(!autoDiscovery)", "value": "AutoDiscovery = false" }
+        ]
+      }
+    },
     "projectSlug": {
       "type": "derived",
       "valueSource": "name",

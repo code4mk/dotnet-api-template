@@ -7,6 +7,14 @@ EnvFile.Load();                                             // root .env -> envi
 
 var builder = WebApplication.CreateBuilder(args);
 
+// In every environment: fail at startup if a registered service can't be created (e.g. a missing
+// dependency) or a scoped service is used from a singleton, instead of on the first request.
+builder.Host.UseDefaultServiceProvider(options =>
+{
+    options.ValidateOnBuild = true;
+    options.ValidateScopes = true;
+});
+
 builder.Services.AddApiDefaults(builder.Configuration);     // ProblemDetails, validation, OpenAPI/Swagger, JSON, CORS
 builder.Services.AddInfrastructure(builder.Configuration);  // DbContext, auth, email
 builder.Services.AddFeatures();                             // feature services

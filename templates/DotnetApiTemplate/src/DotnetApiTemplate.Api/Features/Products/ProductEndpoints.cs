@@ -1,11 +1,12 @@
+using DotnetApiTemplate.Api.Common.Features;
 using DotnetApiTemplate.Api.Common.Pagination;
 using DotnetApiTemplate.Api.Common.Results;
 
 namespace DotnetApiTemplate.Api.Features.Products;
 
-public static class ProductEndpoints
+public sealed class ProductEndpoints : IEndpoints
 {
-    public static IEndpointRouteBuilder MapProductEndpoints(this IEndpointRouteBuilder api)
+    public void MapEndpoints(IEndpointRouteBuilder api)
     {
         var group = api.MapGroup("/products")
             .WithTags("Products");
@@ -33,8 +34,6 @@ public static class ProductEndpoints
         group.MapDelete("/{id:int}", Delete)
             .WithName("DeleteProduct")
             .WithSummary("Delete a product.");
-
-        return api;
     }
 
     private static async Task<Ok<PagedResponse<ProductResponse>>> GetAll(

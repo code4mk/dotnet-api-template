@@ -1,7 +1,7 @@
 # Adding a feature
 
-A feature is one folder under `src/DotnetApiTemplate.Api/Features/` with five files, plus its entity,
-database configuration, migration and tests. This guide builds a **Categories** feature end to end;
+A feature is one folder under `src/DotnetApiTemplate.Api/Features/` (folders can be nested, e.g.
+`Features/Catalog/Categories/`) with five files, plus its entity, database configuration, migration and tests. This guide builds a **Categories** feature end to end;
 `Features/Products/` is the reference to copy from.
 
 ```text
@@ -14,9 +14,9 @@ Features/Categories/
 ├── CategoryMappings.cs                       6. entity ↔ DTO
 ├── ICategoryService.cs                       7. service contract
 ├── CategoryService.cs                        8. business rules + CategoryErrors
-└── CategoryEndpoints.cs                      9. HTTP
-Common/Extensions/...                         10. register service, map endpoints
-tests/...                                     11. unit + integration tests
+└── CategoryEndpoints.cs                      9. HTTP (implements IEndpoints)
+Common/Extensions/...                         10. register + map (manual mode only)
+tests/...                                     11. unit + integration tests, route snapshot
 ```
 
 ## 1. Entity
@@ -251,15 +251,16 @@ Services return `Result` for expected failures and never touch `HttpContext`. Se
 
 ```csharp
 // Features/Categories/CategoryEndpoints.cs
+using DotnetApiTemplate.Api.Common.Features;
 using DotnetApiTemplate.Api.Common.Pagination;
 using DotnetApiTemplate.Api.Common.Results;
 using DotnetApiTemplate.Api.Infrastructure.Authentication;
 
 namespace DotnetApiTemplate.Api.Features.Categories;
 
-public static class CategoryEndpoints
+public sealed class CategoryEndpoints : IEndpoints
 {
-    public static IEndpointRouteBuilder MapCategoryEndpoints(this IEndpointRouteBuilder api)
+    public void MapEndpoints(IEndpointRouteBuilder api)     // api = the /api group
     {
         var group = api.MapGroup("/categories").WithTags("Categories");
 
@@ -287,8 +288,6 @@ public static class CategoryEndpoints
             .WithName("DeleteCategory")
             .WithSummary("Delete a category (admin only).")
             .RequireAuthorization(Policies.Admin);
-
-        return api;
     }
 
     private static async Task<Ok<PagedResponse<CategoryResponse>>> GetAll(
@@ -332,15 +331,39 @@ token unless it says `AllowAnonymous()`; see [Authentication](authentication-and
 
 ## 10. Register and map
 
+How depends on the project's wiring mode, `FeatureDiscovery.AutoDiscovery` in
+`Common/Features/FeatureDiscovery.cs` (chosen with `--auto-discovery` when the project was created):
+
+**Manual mode (`false`, the default):** add one line in each file:
+
 ```csharp
 // Common/Extensions/ServiceCollectionExtensions.cs → AddFeatures()
 services.AddScoped<ICategoryService, CategoryService>();
 
 // Common/Extensions/EndpointExtensions.cs → MapFeatures()
-api.MapCategoryEndpoints();
+api.MapEndpoints<CategoryEndpoints>();
 ```
 
-Run the API and the feature shows up in Swagger (`/swagger`) under **Categories**.
+**Auto-discovery (`true`):** nothing to do. At startup every `IEndpoints` class under `Features/` (any
+depth) is mapped, and every `XService : IXService` is registered as scoped. Services that don't follow the
+naming convention, or need another lifetime, are still registered by hand in `AddFeatures()`.
+
+Either way, run the API: the feature shows up in Swagger (`/swagger`) under **Categories**, and the startup
+log lists it: `Mapped feature endpoints (manual): AuthEndpoints, CategoryEndpoints, ...`.
+
+### If you forget something
+
+| Mistake | Caught by |
+| --- | --- |
+| Service not registered (manual: missing line; auto: name doesn't match, e.g. `CategoriesService : ICategoryService`) | Startup stops: `Feature services not registered: ICategoryService. ...`, and `FeatureWiringTests` fail |
+| Endpoints not mapped (manual mode) | `RouteTests.EveryEndpointsClass_IsMapped` fails |
+| Any route added, removed or made public | `RouteTests.Routes_MatchSnapshot` fails until the snapshot is updated (step 11) |
+
+### Switching modes later
+
+Change `AutoDiscovery` in `Common/Features/FeatureDiscovery.cs`. Both modes produce the same routes for the
+same code, and the tests check both the same way. In auto mode the manual lines in `AddFeatures()` /
+`MapFeatures()` aren't used; you can delete them.
 
 ## 11. Tests
 
@@ -390,6 +413,23 @@ public sealed class CategoryEndpointsTests(ApiFactory factory) : IClassFixture<A
 ```
 
 See [Testing](testing.md) for what to cover (success, `401`, `403`, `400`, each business error).
+
+### Route snapshot
+
+`tests/DotnetApiTemplate.IntegrationTests/Common/routes.snapshot.txt` lists every route with its access rule:
+
+```text
+DELETE /api/categories/{id:int} | policy:Admin | CategoryEndpoints
+GET /api/categories/ | public | CategoryEndpoints
+POST /api/categories/ | auth | CategoryEndpoints
+```
+
+After adding the feature, `RouteTests.Routes_MatchSnapshot` fails and prints the new list. Check it (is
+everything `public` meant to be public?), then update and commit the snapshot:
+
+```bash
+UPDATE_SNAPSHOTS=1 dotnet test --filter "FullyQualifiedName~RouteTests"
+```
 
 ## Finally
 
