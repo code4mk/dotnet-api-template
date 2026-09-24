@@ -23,7 +23,7 @@ src/DotnetApiTemplate.Api/
 ├── Domain/                 // entities, enums, base types
 ├── Data/                   // AppDbContext, configurations, migrations
 ├── Infrastructure/         // authentication, email, external services
-└── Common/                 // errors, middleware, results, pagination, extensions
+└── Common/                 // errors, middleware, results, pagination, settings, JSON, CORS, OpenAPI, extensions
 ```
 
 Rules:
@@ -31,7 +31,8 @@ Rules:
 1. **Five files per feature:** `XEndpoints`, `IXService`, `XService`, `XDtos`, `XMappings`.
 2. **Endpoints are thin.** They call one service method and convert `Result<T>` to `TypedResults`.
 3. **Services own business logic.** They never use `HttpContext` or return `IResult`.
-4. **Expected failures are results, not exceptions.** Services return `Result`/`Result<T>` with an `Error`.
+4. **Expected failures are results by default.** Services return `Result`/`Result<T>` with an `Error` from the
+   feature's catalog; code that can't return one throws the same error (`Error.ToException()`).
 5. **Validation on DTOs.** Request records carry data annotations; rules needing the database live in services.
 6. **Mappings, not serializers.** Entity-to-DTO conversion lives in `XMappings`; JSON settings are global.
 7. **Only services and `Data/` touch `AppDbContext`.**

@@ -7,6 +7,8 @@ ASP.NET Core Minimal API built on .NET 10.
 ```bash
 cp .env.example .env
 docker compose up -d db mailpit
+dotnet tool restore
+dotnet ef database update --project src/DotnetApiTemplate.Api
 dotnet watch --project src/DotnetApiTemplate.Api
 ```
 
@@ -15,7 +17,8 @@ dotnet watch --project src/DotnetApiTemplate.Api
 Then open Swagger UI at `http://localhost:5080/swagger`, or send the sample requests in
 `src/DotnetApiTemplate.Api/DotnetApiTemplate.Api.http` from your IDE.
 
-Full instructions: [docs/development/getting-started.md](docs/development/getting-started.md).
+Full instructions: [docs/development/getting-started.md](docs/development/getting-started.md). All developer guides
+(configuration, database and migrations, errors, auth, email, CORS, testing, deployment, ...): [docs/README.md](docs/README.md).
 
 ## Solution layout
 
@@ -25,7 +28,7 @@ Full instructions: [docs/development/getting-started.md](docs/development/gettin
 | `tests/DotnetApiTemplate.UnitTests` | Service tests (EF Core in-memory) |
 | `tests/DotnetApiTemplate.IntegrationTests` | Endpoint tests with `WebApplicationFactory` |
 | `docker/` | `Dockerfile` (production) and `Dockerfile.dev` (auto reload); `docker-compose.yml` is at the root |
-| `docs/` | ADRs, architecture, API conventions, developer guides |
+| `docs/` | Developer guides, API conventions, architecture, ADRs; start at `docs/README.md` |
 | `scripts/` | Helper scripts (migrations, local setup) |
 | `.github/workflows/` | CI build/test and Docker image publishing |
 

@@ -123,7 +123,8 @@ Then:
 4. **Remove sample features** you don't need, or copy `Features/Products` to start a new feature.
 5. **Update the project README** with what the service does.
 
-Full developer guide inside every project: `docs/development/getting-started.md`.
+Developer guides inside every project: `docs/README.md` (getting started, configuration, database and
+migrations, errors and exceptions, auth, email, CORS, JSON, Swagger, logging, testing, Docker and deployment).
 
 ## Hidden files
 

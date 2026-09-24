@@ -26,7 +26,7 @@ flowchart LR
 | `Domain/` | Entities and enums, no framework dependencies |
 | `Data/` | EF Core `AppDbContext`, entity configurations, migrations (applied manually) |
 | `Infrastructure/` | Authentication (JWT), email (Scriban templates, PreMailer.Net, MailKit), clients for external services |
-| `Common/` | Cross-cutting code: errors, middleware, results, pagination, registration |
+| `Common/` | Cross-cutting code: errors and exceptions, middleware, results, pagination, settings, JSON, CORS, OpenAPI, registration |
 
 ## Cross-cutting decisions
 
@@ -34,3 +34,7 @@ flowchart LR
 - Errors: RFC 7807 `ProblemDetails` for every non-2xx response.
 - Validation: .NET 10 built-in validation on request DTOs.
 - Observability: `X-Correlation-Id` on every response and in the log scope; `/health` endpoint.
+- Configuration: environment variables / `.env`, typed settings validated at startup.
+- Database: schema changes only through migrations applied manually; nothing runs at startup.
+
+Developer guides for each topic: [docs/README.md](../README.md).

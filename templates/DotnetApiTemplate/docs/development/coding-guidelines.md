@@ -1,16 +1,9 @@
 # Coding guidelines
 
-## Adding a feature
+## Features
 
-1. Create `src/DotnetApiTemplate.Api/Features/<Feature>/` with five files:
-   `<Feature>Endpoints.cs`, `I<Feature>Service.cs`, `<Feature>Service.cs`, `<Feature>Dtos.cs`, `<Feature>Mappings.cs`.
-2. Add the entity to `Domain/Entities/` and a configuration to `Data/Configurations/`.
-3. Add a `DbSet` to `AppDbContext` and create a migration.
-4. Register the service in `AddFeatures()` (`Common/Extensions/ServiceCollectionExtensions.cs`).
-5. Map the endpoints in `MapFeatures()` (`Common/Extensions/EndpointExtensions.cs`).
-6. Add unit tests for the service and integration tests for the endpoints.
-
-Copy the `Products` feature as a starting point.
+Five files per feature: `<Feature>Endpoints.cs`, `I<Feature>Service.cs`, `<Feature>Service.cs`,
+`<Feature>Dtos.cs`, `<Feature>Mappings.cs`. Step by step: [Adding a feature](adding-a-feature.md).
 
 ## Endpoints
 
@@ -22,7 +15,8 @@ Copy the `Products` feature as a starting point.
 ## Services
 
 - All business rules live here.
-- Return `Result` / `Result<T>` for expected failures; throw only for truly unexpected problems.
+- Return `Result` / `Result<T>` for expected failures; throw (`AppException`s or `Error.ToException()`) only where
+  returning is impractical. See [Errors and exceptions](errors-and-exceptions.md).
 - Keep feature errors in a static `<Feature>Errors` class with stable codes (`feature.error_name`).
 - No `HttpContext`, no `IResult`, no ASP.NET types.
 - Use `AsNoTracking()` and project with `Select(<Feature>Mappings.ToResponseExpression)` for reads.
@@ -38,7 +32,10 @@ Copy the `Products` feature as a starting point.
 
 - File-scoped namespaces, one public type per file (small related records may share a DTO file).
 - Async methods end with `Async` (endpoint handlers are exempt).
-- Configuration through typed settings classes bound from environment variables (`AddEnvSettings`, see getting-started); `appsettings.json` is only for logging.
+- Configuration through typed settings classes bound from environment variables (`AddEnvSettings`, see
+  [Configuration](configuration-and-environments.md)); `appsettings.json` is only for logging.
+- Log with message templates (`"Order {OrderId} placed"`), never interpolated strings; never log secrets.
+- Use `TimeProvider` / UTC for time, never `DateTime.Now`.
 - Never commit secrets.
 
 ## Pull request checklist
@@ -47,5 +44,7 @@ Copy the `Products` feature as a starting point.
 - [ ] Business logic is in the service and covered by unit tests.
 - [ ] New endpoints have integration tests, including auth and validation cases.
 - [ ] Public endpoints are intentional (`AllowAnonymous`).
-- [ ] Migration added if the model changed.
+- [ ] Migration added if the model changed, and its `Up`/`Down` reviewed (no unintended drops).
 - [ ] No secrets in code, `appsettings.json` or `.env.example`; new variables added to `.env.example`.
+- [ ] New error codes follow `feature.error_name` and error paths are tested.
+- [ ] Docs updated if behavior, settings or commands changed.
