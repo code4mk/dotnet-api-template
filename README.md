@@ -12,7 +12,7 @@ dotnet new dotnet-api-template -n NexusRE -o nexusre-backend
 
 | Area | Included |
 | --- | --- |
-| API | .NET 10 Minimal APIs, route groups, `TypedResults`, OpenAPI |
+| API | .NET 10 Minimal APIs, route groups, `TypedResults`, OpenAPI with Swagger UI (JWT **Authorize**) in Development |
 | Structure | Feature folders with a service layer (`Endpoints`, `IService`, `Service`, `Dtos`, `Mappings`) |
 | Errors | `Result<T>` pattern, RFC 7807 ProblemDetails, global exception handler |
 | Validation | .NET 10 built-in validation with data annotations on request DTOs |
@@ -78,7 +78,9 @@ nexusre-backend/
 ├── src/NexusRE.Api/                   namespace NexusRE.Api
 ├── tests/NexusRE.UnitTests/
 ├── tests/NexusRE.IntegrationTests/
-├── docker/                            Compose project "nexusre", image "nexusre-api"
+├── docker-compose.yml                 Compose project "nexusre", image "nexusre-api"
+├── docker/                            Dockerfile (production), Dockerfile.dev (auto reload)
+├── .env.example                       copy to .env
 ├── docs/
 ├── scripts/
 └── .github/workflows/
@@ -98,15 +100,13 @@ dotnet test
 
 # Create your settings, then start PostgreSQL and Mailpit
 cp .env.example .env          # Windows PowerShell: Copy-Item .env.example .env
-cd docker
-docker compose --env-file ../.env up -d db mailpit
-cd ..
+docker compose up -d db mailpit
 
 # Run the API (reloads when you save a file)
 dotnet watch --project src/NexusRE.Api
 ```
 
-Open `http://localhost:5080/health`, or use the sample requests in `src/NexusRE.Api/NexusRE.Api.http`.
+Open Swagger UI at `http://localhost:5080/swagger`, or use the sample requests in `src/NexusRE.Api/NexusRE.Api.http`.
 In Development the API creates the database and seeds:
 
 - Admin user: `admin@example.com` / `Admin@12345`
@@ -167,7 +167,7 @@ The template uses PostgreSQL. To switch to SQL Server:
 
 1. In `Directory.Packages.props` and `src/*.Api/*.Api.csproj`, replace `Npgsql.EntityFrameworkCore.PostgreSQL` with `Microsoft.EntityFrameworkCore.SqlServer`.
 2. In `Common/Extensions/ServiceCollectionExtensions.cs`, replace `UseNpgsql` with `UseSqlServer`.
-3. Update the connection strings and the `db` service in `docker/docker-compose.yml`.
+3. Update `DatabaseSettings` (connection string) and the `db` service in `docker-compose.yml`.
 
 ## Updating and removing the template
 
@@ -268,8 +268,8 @@ a broken version can be unlisted on nuget.org but never deleted.
 | `No templates found matching: 'dotnet-api-template'` | Install the template (step 1) and check `dotnet new list dotnet-api-template`. |
 | Can't find `.env` | It's a hidden file; see [Hidden files](#hidden-files). If it's missing (fresh clone), `cp .env.example .env`. |
 | Settings validation error on startup (e.g. `JWT_SIGNING_KEY: ... minimum length of '32'`) | Fix the named variable in `.env`; every invalid variable is listed. |
-| API can't connect to the database | Start it with `docker compose --env-file ../.env up -d db` in `docker/`, and check `DB_HOST`/`DB_PORT` in `.env`. |
-| `required variable DB_NAME is missing a value` | Docker Compose didn't get the root `.env`: add `--env-file ../.env` when running from `docker/`. |
+| API can't connect to the database | Start it with `docker compose up -d db` from the project root, and check `DB_HOST`/`DB_PORT` in `.env`. |
+| `required variable DB_NAME is missing a value` | Run Docker Compose from the project root (where `docker-compose.yml` and `.env` are), and create `.env` with `cp .env.example .env`. |
 | `port is already allocated` | Another container uses that port. Pick a free `DB_PORT` or `API_PORT` in `.env`. |
 | Namespaces like `my_app.Api` | You used dashes in `-n`. Use PascalCase in `-n` and dashes only in `-o`. |
 | New project contains another project inside it | You ran `dotnet new` inside the template repo. Delete it and run from another folder. |

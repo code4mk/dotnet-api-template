@@ -1,5 +1,6 @@
 using DotnetApiTemplate.Api.Common.Extensions;
 using DotnetApiTemplate.Api.Common.Middleware;
+using DotnetApiTemplate.Api.Common.OpenApi;
 using DotnetApiTemplate.Api.Common.Settings;
 using DotnetApiTemplate.Api.Data.Seed;
 
@@ -7,7 +8,7 @@ EnvFile.Load();                                             // root .env -> envi
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddApiDefaults();                          // ProblemDetails, validation, OpenAPI, JSON
+builder.Services.AddApiDefaults();                          // ProblemDetails, validation, OpenAPI/Swagger, JSON
 builder.Services.AddInfrastructure(builder.Configuration);  // DbContext, auth, email
 builder.Services.AddFeatures();                             // feature services
 
@@ -20,7 +21,7 @@ app.UseMiddleware<CorrelationIdMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapApiDocs();                                       // /openapi/v1.json and Swagger UI at /swagger
     await app.InitializeDatabaseAsync();
 }
 

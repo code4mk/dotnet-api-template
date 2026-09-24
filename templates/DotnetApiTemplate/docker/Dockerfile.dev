@@ -1,5 +1,5 @@
 # Development image: runs `dotnet watch` against source mounted from the host.
-# Used by docker-compose.dev.yml. For production images use docker/Dockerfile.
+# Used by the api-dev service in docker-compose.yml. For production images use docker/Dockerfile.
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0
 WORKDIR /src

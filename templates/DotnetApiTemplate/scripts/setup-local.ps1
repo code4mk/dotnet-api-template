@@ -15,7 +15,7 @@ try {
     }
 
     Write-Host "Starting PostgreSQL and Mailpit..." -ForegroundColor Cyan
-    docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.override.yml up -d db mailpit
+    docker compose up -d db mailpit
 
     Write-Host "Restoring and building..." -ForegroundColor Cyan
     dotnet build

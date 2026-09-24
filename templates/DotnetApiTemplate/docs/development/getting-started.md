@@ -88,9 +88,7 @@ To add a setting: add the variable to `.env.example` (committed, so others see i
 ```bash
 # 1. Create your settings (once) and start PostgreSQL and Mailpit
 cp .env.example .env
-cd docker
-docker compose --env-file ../.env up -d db mailpit
-cd ..
+docker compose up -d db mailpit
 
 # 2. Run the API with auto reload
 dotnet watch --project src/DotnetApiTemplate.Api
@@ -103,37 +101,38 @@ can't be applied live, such as a changed method signature, it asks to restart; s
 The API listens on `http://localhost:5080`. In Development it creates the database, seeds an admin
 user (`admin@example.com` / `Admin@12345`) and three sample products.
 
+- Swagger UI: `http://localhost:5080/swagger` (log in with `POST /api/auth/login`, then **Authorize** with
+  the `accessToken`; endpoints with a lock need it)
 - OpenAPI document: `http://localhost:5080/openapi/v1.json`
 - Health check: `http://localhost:5080/health`
 - Sample requests: `src/DotnetApiTemplate.Api/DotnetApiTemplate.Api.http`
 
 On Windows you can run `./scripts/setup-local.ps1` instead of step 1.
 
-## Run everything in Docker
+## Docker Compose
 
-```bash
-cd docker
-docker compose --env-file ../.env up --build
-```
+There is one `docker-compose.yml` at the repository root. Run every command from the root; Compose
+reads `.env` there automatically. Profiles choose what runs:
 
-The API is available at `http://localhost:18080` (`API_PORT` in `.env`). Inside Docker it always
-connects to the database at `db:5432`, whatever `DB_HOST`/`DB_PORT` say. This builds the production image, so code changes
-need `docker compose up --build`.
+| Command | Runs |
+| --- | --- |
+| `docker compose up -d db mailpit` | PostgreSQL and Mailpit, for the API running on your machine (above) |
+| `docker compose --profile dev up --build` | Everything in Docker, API with auto reload (`api-dev`) |
+| `docker compose --profile prod up -d --build` | The production image of the API (`api`) with PostgreSQL |
+| `docker compose --profile dev --profile prod down` | Stops everything; add `-v` to delete the database and NuGet cache volumes |
 
-## Run everything in Docker with auto reload
+In both profiles the API is at `http://localhost:18080` (`API_PORT` in `.env`) and connects to the
+database at `db:5432`, whatever `DB_HOST`/`DB_PORT` say. PostgreSQL and Mailpit are published on
+`127.0.0.1` only, so they are reachable from this machine but not from the network.
 
-```bash
-cd docker
-docker compose --env-file ../.env -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.dev.yml up --build
-```
+**`dev` profile:** `api-dev` runs `dotnet watch` inside an SDK container with your source mounted and
+sends email to Mailpit. Save a file under `src/` and the API reloads, with no image rebuild; changes
+that can't be hot reloaded restart the app automatically. The container keeps its own `bin/` and
+`obj/`, so it doesn't clash with builds on your machine. Only rebuild (`--build`) after changing
+`docker/Dockerfile.dev`.
 
-The API runs `dotnet watch` inside an SDK container with your source mounted, at `http://localhost:18080`.
-Save a file under `src/` and the API reloads, with no image rebuild. Changes that can't be hot reloaded
-restart the app automatically. The container keeps its own `bin/` and `obj/`, so it doesn't clash with
-builds on your machine.
-
-Only rebuild (`--build`) after changing `docker/Dockerfile.dev`. Stop with the same `--env-file` and `-f`
-flags and `down` instead of `up --build`; add `-v` to also delete the database and NuGet cache volumes.
+**`prod` profile:** `api` is built from `docker/Dockerfile` (the production image), so code changes need
+`--build`. It sends email to `EMAIL_HOST` from `.env`.
 
 ## Email
 

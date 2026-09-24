@@ -33,6 +33,7 @@ public static class RootEndpoints
 
         if (environment.IsDevelopment())
         {
+            links["swagger"] = "/swagger";
             links["openapi"] = "/openapi/v1.json";
         }
 

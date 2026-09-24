@@ -1,0 +1,90 @@
+# One Compose file for every setup. Run from the repository root; settings come from .env
+# (cp .env.example .env). Pick what runs with profiles:
+#
+#   docker compose up -d db mailpit          database + email inbox; run the API with `dotnet watch`
+#   docker compose --profile dev up --build  everything in Docker, API with auto reload (api-dev)
+#   docker compose --profile prod up -d --build   production image of the API (api)
+#
+# Stop with `docker compose --profile dev --profile prod down` (add -v to delete the volumes).
+
+name: dotnetapitemplate-slug
+
+# Shared by both API services. Inside Docker the API reaches PostgreSQL through the Compose network.
+x-api: &api
+  env_file: .env                   # APP_ENV, DB_*, JWT_*, EMAIL_*, SEED_*
+  ports:
+    - "${API_PORT:-18080}:8080"
+  depends_on:
+    db:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: "${DB_NAME:?set DB_NAME in .env (cp .env.example .env)}"
+      POSTGRES_USER: "${DB_USER:?set DB_USER in .env (cp .env.example .env)}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:?set DB_PASSWORD in .env (cp .env.example .env)}"
+    ports:
+      # Only on this machine, for your IDE and for the API running outside Docker.
+      - "127.0.0.1:${DB_PORT:-54320}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # Local email server: catches every email the API sends. Inbox: http://localhost:<MAILPIT_UI_PORT>
+  mailpit:
+    image: axllent/mailpit:v1.31
+    profiles: [dev]
+    ports:
+      - "127.0.0.1:${EMAIL_PORT:-21025}:1025"        # SMTP, for the API running on your machine
+      - "127.0.0.1:${MAILPIT_UI_PORT:-28025}:8025"   # web inbox
+    restart: unless-stopped
+
+  # API with `dotnet watch` on the mounted source: edits under src/ reload without a rebuild.
+  api-dev:
+    <<: *api
+    profiles: [dev]
+    image: dotnetapitemplate-slug-api:dev
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      EMAIL_HOST: mailpit
+      EMAIL_PORT: "1025"
+      EMAIL_ENABLE_SSL: "false"
+    volumes:
+      - .:/src
+      # Keep the container's build output separate from the host's bin/obj.
+      - /src/src/DotnetApiTemplate.Api/bin
+      - /src/src/DotnetApiTemplate.Api/obj
+      - nuget-cache:/root/.nuget/packages
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
+  # Production image (docker/Dockerfile). Email goes to EMAIL_HOST from .env.
+  api:
+    <<: *api
+    profiles: [prod]
+    image: dotnetapitemplate-slug-api:latest
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+
+volumes:
+  db-data:
+  nuget-cache:

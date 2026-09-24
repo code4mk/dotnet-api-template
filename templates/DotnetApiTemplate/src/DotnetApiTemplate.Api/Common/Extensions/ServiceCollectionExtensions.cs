@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using DotnetApiTemplate.Api.Common.Errors;
+using DotnetApiTemplate.Api.Common.OpenApi;
 using DotnetApiTemplate.Api.Common.Settings;
 using DotnetApiTemplate.Api.Data;
 using DotnetApiTemplate.Api.Domain.Entities;
@@ -22,7 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddValidation();
-        services.AddOpenApi();
+        services.AddApiDocs();
         services.AddHealthChecks();
 
         services.ConfigureHttpJsonOptions(options =>
