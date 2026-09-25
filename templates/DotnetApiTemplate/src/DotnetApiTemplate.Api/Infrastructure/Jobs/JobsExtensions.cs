@@ -16,6 +16,13 @@ public static class JobsExtensions
     /// </summary>
     public static IServiceCollection AddJobs(this IServiceCollection services, IConfiguration configuration)
     {
+        if (!JobsSettings.EnabledFor(configuration))
+        {
+            // JOBS_ENABLED=false: no storage, server, dashboard or schedules; Enqueue runs the job right away.
+            services.AddSingleton<IBackgroundJobClient, InlineBackgroundJobClient>();
+            return services;
+        }
+
         services.AddHangfire((sp, config) =>
         {
             var database = sp.GetRequiredService<DatabaseSettings>();
@@ -57,12 +64,16 @@ public static class JobsExtensions
     }
 
     /// <summary>
-    /// The dashboard at /jobs (roles all/api): open in Development; elsewhere only with
+    /// The dashboard at /jobs (roles all/api, JOBS_ENABLED=true): open in Development; elsewhere only with
     /// JOBS_DASHBOARD_USERNAME and JOBS_DASHBOARD_PASSWORD (basic auth), otherwise not served.
     /// </summary>
     public static WebApplication MapJobsDashboard(this WebApplication app)
     {
         var jobs = app.Services.GetRequiredService<JobsSettings>();
+        if (!jobs.Enabled)
+        {
+            return app;
+        }
 
         IDashboardAuthorizationFilter? authorization =
             app.Environment.IsDevelopment() ? new DashboardOpenFilter()

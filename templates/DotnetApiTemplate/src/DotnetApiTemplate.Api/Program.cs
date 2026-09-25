@@ -46,7 +46,14 @@ if (role.RunsApi)
     app.MapJobsDashboard();                                 // /jobs: open in Development, basic auth elsewhere
 }
 
-app.Logger.LogInformation("Role {Role}: API {Api}, background jobs {Jobs}", role.Role, role.RunsApi, role.RunsJobs);
+var jobs = app.Services.GetRequiredService<JobsSettings>();
+app.Logger.LogInformation("Role {Role}: API {Api}, background jobs {Jobs}", role.Role, role.RunsApi, jobs.Enabled && role.RunsJobs);
+if (!jobs.Enabled)
+{
+    app.Logger.LogWarning(role.RunsApi
+        ? "Background jobs disabled (JOBS_ENABLED=false): enqueued jobs run inline in the request, without retries; delayed and recurring jobs don't run"
+        : "Background jobs disabled (JOBS_ENABLED=false): this worker process has nothing to do (only /health)");
+}
 
 await app.RunAsync();
 

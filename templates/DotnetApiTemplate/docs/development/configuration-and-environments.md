@@ -73,6 +73,7 @@ root, from `src/...` and in tests.
 | `EMAIL_USERNAME`, `EMAIL_PASSWORD` | empty | SMTP login (skipped when the username is empty) |
 | `EMAIL_FROM`, `EMAIL_FROM_NAME` | `no-reply@dotnetapitemplate.local`, `DotnetApiTemplate` | Sender address and display name |
 | `MAILPIT_UI_PORT` | `28025` | Host port of the Mailpit inbox (Docker only) |
+| `JOBS_ENABLED` | `true` | `false` turns Hangfire off: jobs run inline in the request, no retries or schedules. See [Background jobs](background-jobs.md#turning-jobs-off-jobs_enabled) |
 | `JOBS_WORKER_COUNT`, `JOBS_QUEUES`, `JOBS_POLL_INTERVAL_SECONDS`, `JOBS_SHUTDOWN_TIMEOUT_SECONDS` | `10`, `default,emails`, `5`, `60` | Background job worker, see [Background jobs](background-jobs.md#configuration) |
 | `JOBS_DASHBOARD_USERNAME`, `JOBS_DASHBOARD_PASSWORD` | empty | `/jobs` dashboard login outside Development |
 

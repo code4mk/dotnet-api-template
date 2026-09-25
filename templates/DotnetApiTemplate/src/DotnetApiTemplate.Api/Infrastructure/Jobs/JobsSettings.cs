@@ -6,6 +6,18 @@ namespace DotnetApiTemplate.Api.Infrastructure.Jobs;
 /// <summary>Background job (Hangfire) settings from JOBS_* environment variables (.env).</summary>
 public sealed class JobsSettings : IEnvSettings
 {
+    /// <summary>
+    /// <c>true</c> (default): Hangfire with PostgreSQL: jobs are stored, run by a worker and retried; schedules run.
+    /// <c>false</c>: no Hangfire at all: enqueued jobs run immediately in the request (no retries), delayed
+    /// jobs are rejected, recurring jobs don't run. Features use the same code in both modes.
+    /// </summary>
+    [ConfigurationKeyName("JOBS_ENABLED")]
+    public bool Enabled { get; init; } = true;
+
+    /// <summary>Reads JOBS_ENABLED before the settings are validated (for registration decisions).</summary>
+    public static bool EnabledFor(IConfiguration configuration) =>
+        !bool.TryParse(configuration["JOBS_ENABLED"], out var enabled) || enabled;
+
     /// <summary>Jobs processed in parallel by one worker process.</summary>
     [ConfigurationKeyName("JOBS_WORKER_COUNT")]
     [Range(1, 100)]

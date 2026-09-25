@@ -28,6 +28,25 @@ In production the Docker image runs both processes in **one container with super
 (`docker/supervisor/supervisord.conf`): `api` on port 8080, `worker` on 8081. On a VM, use
 `deploy/supervisor/dotnetapitemplate.conf`. See [Docker and deployment](docker-and-deployment.md).
 
+## Turning jobs off: `JOBS_ENABLED`
+
+`JOBS_ENABLED=true` (default) is everything described here. `JOBS_ENABLED=false` switches Hangfire off
+completely, for projects or environments that don't need a queue yet:
+
+| | `JOBS_ENABLED=true` | `JOBS_ENABLED=false` |
+| --- | --- | --- |
+| `jobs.Enqueue<T>(...)` | stored, run by a worker, retried on failure | **runs immediately, in the request**, in its own DI scope; a failure is logged, not retried, and the request still succeeds |
+| `jobs.Schedule<T>(...)` (delayed) | runs at the given time | rejected with `NotSupportedException` (it must not run early) |
+| Recurring jobs | scheduled | don't run |
+| Dashboard `/jobs` | served | `404` |
+| `APP_ROLE=worker` process | runs jobs | stays up with only `/health` and logs that it has nothing to do |
+| `hangfire` tables | used | exist (from the migrations), unused |
+
+Startup logs a warning while jobs are off. Features don't change between the modes: they always use
+`IBackgroundJobClient`. **Turning jobs on later is only `JOBS_ENABLED=true`**; the tables are already there.
+
+Keep `true` in production whenever emails or other work must not be lost: with `false`, a failed job is gone.
+
 ## Setup
 
 Hangfire's tables are created by the migrations, like everything else (never at startup):
@@ -172,6 +191,7 @@ consider restricting `/jobs` to your network at the reverse proxy.
 
 | Variable | Default | |
 | --- | --- | --- |
+| `JOBS_ENABLED` | `true` | `false` switches Hangfire off: jobs run inline in the request (above) |
 | `APP_ROLE` | `all` | `all` / `api` / `worker` (above) |
 | `JOBS_WORKER_COUNT` | `10` | Jobs run in parallel by one worker process |
 | `JOBS_QUEUES` | `default,emails` | Queues this worker processes, highest priority first |
