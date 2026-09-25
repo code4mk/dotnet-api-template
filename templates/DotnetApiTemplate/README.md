@@ -38,6 +38,8 @@ Full instructions: [docs/development/getting-started.md](docs/development/gettin
 
 - [ADR-0001: Minimal APIs](docs/adr/0001-use-minimal-apis.md)
 - [ADR-0002: Folder structure](docs/adr/0002-project-folder-structure.md)
+- [ADR-0003: Email with Scriban, PreMailer.Net and MailKit](docs/adr/0003-send-email-with-scriban-premailer-mailkit.md)
+- [ADR-0004: Background jobs with Hangfire and PostgreSQL](docs/adr/0004-run-background-jobs-with-hangfire-and-postgresql.md)
 - [API conventions](docs/api/conventions.md)
 - [Coding guidelines](docs/development/coding-guidelines.md)
 

@@ -1,5 +1,7 @@
 # Email
 
+Why these libraries: [ADR-0003](../adr/0003-send-email-with-scriban-premailer-mailkit.md).
+
 Emails are **typed classes** with a **Scriban template**. The pipeline:
 
 ```text

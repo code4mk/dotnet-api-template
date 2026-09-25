@@ -32,7 +32,7 @@ Forces:
 We adopt ASP.NET Core Minimal APIs as the standard for all new HTTP APIs.
 
 1. **Minimal APIs only.** All HTTP endpoints are defined with Minimal API mapping methods (`MapGet`, `MapPost`, `MapPut`, `MapDelete`).
-2. **Route groups.** Related endpoints are grouped with `MapGroup` inside a static extension method (for example `MapOrderEndpoints`). `Program.cs` only wires groups; it holds no endpoint logic.
+2. **Route groups.** Related endpoints are grouped with `MapGroup` in one class per feature that implements `IEndpoints` (for example `OrderEndpoints`), mapped by `MapFeatures()` by hand or by auto-discovery. `Program.cs` only wires features; it holds no endpoint logic.
 3. **No logic in lambdas.** Endpoints are named static methods. Business logic sits in services, never inline in `Program.cs`.
 4. **TypedResults.** Endpoints return `TypedResults` and `Results<T1, T2>` so responses are type-checked and appear correctly in OpenAPI.
 5. **Validation.** Use the built-in Minimal API validation in .NET 10 for simple rules; FluentValidation through an endpoint filter is allowed for complex rules.

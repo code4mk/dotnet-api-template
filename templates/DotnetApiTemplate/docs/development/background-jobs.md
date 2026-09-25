@@ -1,5 +1,7 @@
 # Background jobs
 
+Why Hangfire with PostgreSQL: [ADR-0004](../adr/0004-run-background-jobs-with-hangfire-and-postgresql.md).
+
 [Hangfire](https://www.hangfire.io/) with PostgreSQL storage: fire-and-forget, delayed and recurring (cron)
 jobs, automatic retries, a dashboard, and any number of worker processes sharing one queue.
 
