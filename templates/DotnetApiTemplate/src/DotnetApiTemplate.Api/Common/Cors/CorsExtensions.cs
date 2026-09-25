@@ -14,7 +14,6 @@ public static class CorsExtensions
     /// </summary>
     public static IServiceCollection AddApiCors(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddEnvSettings<CorsSettings>(configuration);
         services.AddCors();
 
         services.AddOptions<CorsOptions>()

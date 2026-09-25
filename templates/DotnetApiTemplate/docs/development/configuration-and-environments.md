@@ -81,7 +81,7 @@ and is validated when the app starts.
 
 ```csharp
 // Common/Settings/DatabaseSettings.cs (shortened)
-public sealed class DatabaseSettings
+public sealed class DatabaseSettings : IEnvSettings   // found and registered automatically
 {
     [ConfigurationKeyName("DB_HOST")]    // the variable name
     [Required]                           // validated at startup
@@ -92,6 +92,10 @@ public sealed class DatabaseSettings
     public int Port { get; init; } = 5432;              // "54320" is converted to int
 }
 ```
+
+Mark it with `IEnvSettings` and it's registered and validated automatically (`AddAllEnvSettings()` in
+`Program.cs` finds every marked class). A class that isn't marked can still be registered by hand with
+`services.AddEnvSettings<T>(configuration)`; registering a class twice is harmless.
 
 Inject it directly, or as `IOptions<T>`:
 
@@ -141,7 +145,7 @@ Example: a `PAYMENTS_API_KEY` for a payment client.
 
    ```csharp
    // Infrastructure/ExternalServices/Payments/PaymentSettings.cs
-   public sealed class PaymentSettings
+   public sealed class PaymentSettings : IEnvSettings     // the marker: found and registered automatically
    {
        [ConfigurationKeyName("PAYMENTS_API_KEY")]
        [Required]
@@ -153,15 +157,15 @@ Example: a `PAYMENTS_API_KEY` for a payment client.
    }
    ```
 
-3. **Register it** where the feature's services are registered:
+3. **Inject it** (`PaymentSettings settings` or `IOptions<PaymentSettings>`) where needed. There's no
+   registration line: `AddAllEnvSettings()` in `Program.cs` registers and validates every class marked
+   `IEnvSettings`, in any folder.
 
-   ```csharp
-   services.AddEnvSettings<PaymentSettings>(configuration);
-   ```
+4. **Document it** in the table above if other developers need to know.
 
-4. **Inject it** (`PaymentSettings settings`) where needed.
-
-5. **Document it** in the table above if other developers need to know.
+Start the app without the variable and you get `PAYMENTS_API_KEY: The PAYMENTS_API_KEY field is required.`,
+even before any code uses the class. A class with `[ConfigurationKeyName]` properties but without the
+marker fails `SettingsDiscoveryTests`, so it can't be forgotten silently.
 
 ## Validation errors at startup
 

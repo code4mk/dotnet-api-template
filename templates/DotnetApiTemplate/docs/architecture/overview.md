@@ -34,7 +34,8 @@ flowchart LR
 - Errors: RFC 7807 `ProblemDetails` for every non-2xx response.
 - Validation: .NET 10 built-in validation on request DTOs.
 - Observability: `X-Correlation-Id` on every response and in the log scope; `/health` endpoint.
-- Configuration: environment variables / `.env`, typed settings validated at startup.
+- Configuration: environment variables / `.env`, typed settings classes marked `IEnvSettings`, found
+  automatically and validated at startup.
 - Database: schema changes only through migrations applied manually; nothing runs at startup.
 - Feature wiring: manual by default, or auto-discovery of `IEndpoints` classes and `XService : IXService`
   (`Common/Features/FeatureDiscovery.cs`); a route snapshot test guards the route table in both modes.

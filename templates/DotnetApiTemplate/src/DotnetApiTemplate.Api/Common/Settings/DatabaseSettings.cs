@@ -4,7 +4,7 @@ using Npgsql;
 namespace DotnetApiTemplate.Api.Common.Settings;
 
 /// <summary>PostgreSQL connection from DB_* environment variables (.env).</summary>
-public sealed class DatabaseSettings
+public sealed class DatabaseSettings : IEnvSettings
 {
     [ConfigurationKeyName("DB_HOST")]
     [Required]

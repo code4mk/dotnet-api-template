@@ -8,8 +8,6 @@ public static class EmailExtensions
 {
     public static IServiceCollection AddEmail(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddEnvSettings<EmailSettings>(configuration);
-
         services.AddSingleton<IEmailRenderer, ScribanEmailRenderer>();
         services.AddScoped<IEmailService, EmailService>();
 

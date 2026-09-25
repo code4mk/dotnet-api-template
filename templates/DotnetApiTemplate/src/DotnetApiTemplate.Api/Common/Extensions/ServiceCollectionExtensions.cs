@@ -52,9 +52,6 @@ public static class ServiceCollectionExtensions
     {
         services.TryAddSingleton(TimeProvider.System);
 
-        services.AddEnvSettings<AppSettings>(configuration);
-        services.AddEnvSettings<DatabaseSettings>(configuration);
-
         services.AddDbContext<AppDbContext>((sp, options) =>
             options.UseNpgsql(sp.GetRequiredService<DatabaseSettings>().ConnectionString));
 

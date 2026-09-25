@@ -1,7 +1,9 @@
+using DotnetApiTemplate.Api.Common.Settings;
+
 namespace DotnetApiTemplate.Api.Infrastructure.Email;
 
 /// <summary>SMTP settings from EMAIL_* environment variables (.env).</summary>
-public sealed class EmailSettings
+public sealed class EmailSettings : IEnvSettings
 {
     /// <summary>SMTP host. Leave empty to log emails instead of sending them.</summary>
     [ConfigurationKeyName("EMAIL_HOST")]

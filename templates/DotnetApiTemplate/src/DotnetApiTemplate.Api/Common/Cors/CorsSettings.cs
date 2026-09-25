@@ -1,10 +1,12 @@
+using DotnetApiTemplate.Api.Common.Settings;
+
 namespace DotnetApiTemplate.Api.Common.Cors;
 
 /// <summary>
 /// Browser origins allowed to call the API, from CORS_ALLOWED_ORIGINS (.env), comma-separated:
 /// <c>https://app.example.com,http://localhost:5173</c>. Empty means no cross-origin browser access.
 /// </summary>
-public sealed class CorsSettings
+public sealed class CorsSettings : IEnvSettings
 {
     [ConfigurationKeyName("CORS_ALLOWED_ORIGINS")]
     [OriginList]

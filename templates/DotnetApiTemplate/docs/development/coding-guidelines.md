@@ -32,7 +32,7 @@ Five files per feature: `<Feature>Endpoints.cs`, `I<Feature>Service.cs`, `<Featu
 
 - File-scoped namespaces, one public type per file (small related records may share a DTO file).
 - Async methods end with `Async` (endpoint handlers are exempt).
-- Configuration through typed settings classes bound from environment variables (`AddEnvSettings`, see
+- Configuration through typed settings classes bound from environment variables (`: IEnvSettings`, see
   [Configuration](configuration-and-environments.md)); `appsettings.json` is only for logging.
 - Log with message templates (`"Order {OrderId} placed"`), never interpolated strings; never log secrets.
 - Use `TimeProvider` / UTC for time, never `DateTime.Now`.

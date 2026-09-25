@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using DotnetApiTemplate.Api.Common.Settings;
 
 namespace DotnetApiTemplate.Api.Infrastructure.Authentication;
 
 /// <summary>JWT settings from JWT_* environment variables (.env).</summary>
-public sealed class JwtSettings
+public sealed class JwtSettings : IEnvSettings
 {
     [ConfigurationKeyName("JWT_ISSUER")]
     [Required]

@@ -15,6 +15,7 @@ builder.Host.UseDefaultServiceProvider(options =>
     options.ValidateScopes = true;
 });
 
+builder.Services.AddAllEnvSettings(builder.Configuration);  // every IEnvSettings class (DB_*, JWT_*, EMAIL_*, ...)
 builder.Services.AddApiDefaults(builder.Configuration);     // ProblemDetails, validation, OpenAPI/Swagger, JSON, CORS
 builder.Services.AddInfrastructure(builder.Configuration);  // DbContext, auth, email
 builder.Services.AddFeatures();                             // feature services

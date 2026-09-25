@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace DotnetApiTemplate.Api.Common.Settings;
 
 /// <summary>Project-wide settings from the environment (.env).</summary>
-public sealed class AppSettings
+public sealed class AppSettings : IEnvSettings
 {
     /// <summary>dev, stage or prod. Also sets the ASP.NET Core environment (see <see cref="EnvFile"/>).</summary>
     [ConfigurationKeyName("APP_ENV")]
