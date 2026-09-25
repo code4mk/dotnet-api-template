@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
+using DotnetApiTemplate.Api.Common.Json;
 using DotnetApiTemplate.Api.Features.Users;
+using DotnetApiTemplate.Api.Features.Users.Jobs;
 
 namespace DotnetApiTemplate.IntegrationTests.Features.Users;
 
@@ -18,12 +20,16 @@ public sealed class UserEndpointsTests(ApiFactory factory) : IClassFixture<ApiFa
     }
 
     [Fact]
-    public async Task CreateUser_SendsRenderedWelcomeEmail()
+    public async Task CreateUser_EnqueuesWelcomeEmail_ThatRendersAndSends()
     {
         var client = factory.CreateClient();
         var email = $"welcome-{Guid.NewGuid():N}@example.com";
 
-        await client.PostAsJsonAsync("/api/users", new CreateUserRequest("Jane Doe", email, "Password@123"));
+        var response = await client.PostAsJsonAsync("/api/users", new CreateUserRequest("Jane Doe", email, "Password@123"));
+        var user = await response.Content.ReadFromJsonAsync<UserResponse>(JsonDefaults.Options);
+
+        // The request only enqueues the job; run it like a worker would.
+        await factory.Jobs.RunAsync(factory.Services, job => job.Type == typeof(SendWelcomeEmailJob) && Equals(job.Args[0], user!.Id));
 
         var message = Assert.Single(factory.Emails.Sent, m => m.To == email);
         Assert.Equal("Welcome, Jane Doe!", message.Subject);

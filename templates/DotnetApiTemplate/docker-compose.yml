@@ -3,7 +3,7 @@
 #
 #   docker compose up -d db mailpit          database + email inbox; run the API with `dotnet watch`
 #   docker compose --profile dev up --build  everything in Docker, API with auto reload (api-dev)
-#   docker compose --profile prod up -d --build   production image of the API (api)
+#   docker compose --profile prod up -d --build   production image: API + job worker under supervisor (api)
 #
 # Stop with `docker compose --profile dev --profile prod down` (add -v to delete the volumes).
 
@@ -11,7 +11,7 @@ name: dotnetapitemplate-slug
 
 # Shared by both API services. Inside Docker the API reaches PostgreSQL through the Compose network.
 x-api: &api
-  env_file: .env                   # APP_ENV, DB_*, JWT_*, EMAIL_*
+  env_file: .env                   # APP_ENV, APP_ROLE, DB_*, JWT_*, EMAIL_*, JOBS_*
   ports:
     - "${API_PORT:-18080}:8080"
   depends_on:
@@ -48,6 +48,7 @@ services:
     restart: unless-stopped
 
   # API with `dotnet watch` on the mounted source: edits under src/ reload without a rebuild.
+  # One process runs the API and the background jobs (APP_ROLE=all).
   api-dev:
     <<: *api
     profiles: [dev]
@@ -56,6 +57,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.dev
     environment:
+      APP_ROLE: all
       DB_HOST: db
       DB_PORT: "5432"
       EMAIL_HOST: mailpit
@@ -73,7 +75,8 @@ services:
       mailpit:
         condition: service_started
 
-  # Production image (docker/Dockerfile). Email goes to EMAIL_HOST from .env.
+  # Production image (docker/Dockerfile): supervisor runs the API (8080) and the job worker (8081) in one
+  # container, each with its own APP_ROLE. Email goes to EMAIL_HOST from .env.
   api:
     <<: *api
     profiles: [prod]
@@ -84,6 +87,7 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: "5432"
+    stop_grace_period: 90s       # longer than the worker's stopwaitsecs (75s): running jobs can finish
 
 volumes:
   db-data:

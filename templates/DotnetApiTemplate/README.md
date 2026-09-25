@@ -30,6 +30,7 @@ Full instructions: [docs/development/getting-started.md](docs/development/gettin
 | `docker/` | `Dockerfile` (production) and `Dockerfile.dev` (auto reload); `docker-compose.yml` is at the root |
 | `docs/` | Developer guides, API conventions, architecture, ADRs; start at `docs/README.md` |
 | `scripts/` | Helper scripts (migrations, local setup) |
+| `deploy/supervisor/` | Supervisor config for running the API and worker on a VM |
 | `.github/workflows/` | CI build/test and Docker image publishing |
 
 ## Key decisions

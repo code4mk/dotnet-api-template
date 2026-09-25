@@ -37,6 +37,8 @@ flowchart LR
 - Configuration: environment variables / `.env`, typed settings classes marked `IEnvSettings`, found
   automatically and validated at startup.
 - Database: schema changes only through migrations applied manually; nothing runs at startup.
+- Background jobs: Hangfire with PostgreSQL (schema `hangfire`); one build runs as `api`, `worker` or `all`
+  (`APP_ROLE`); the production image runs API + worker in one container with supervisor.
 - Feature wiring: manual by default, or auto-discovery of `IEndpoints` classes and `XService : IXService`
   (`Common/Features/FeatureDiscovery.cs`); a route snapshot test guards the route table in both modes.
 - Dependency injection is validated at startup (`ValidateOnBuild`, `ValidateScopes`) in every environment.

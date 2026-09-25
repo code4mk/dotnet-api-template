@@ -26,6 +26,14 @@ public sealed class DatabaseSettings : IEnvSettings
     [Required]
     public string Password { get; init; } = string.Empty;
 
+    /// <summary>
+    /// Connections per process (Npgsql's default is 100). With many instances, keep
+    /// instances × processes × DB_MAX_POOL_SIZE below the server's max_connections, or use a pooler (PgBouncer, RDS Proxy).
+    /// </summary>
+    [ConfigurationKeyName("DB_MAX_POOL_SIZE")]
+    [Range(1, 1000)]
+    public int MaxPoolSize { get; init; } = 100;
+
     public string ConnectionString => new NpgsqlConnectionStringBuilder
     {
         Host = Host,
@@ -33,5 +41,6 @@ public sealed class DatabaseSettings : IEnvSettings
         Database = Name,
         Username = User,
         Password = Password,
+        MaxPoolSize = MaxPoolSize,
     }.ConnectionString;
 }

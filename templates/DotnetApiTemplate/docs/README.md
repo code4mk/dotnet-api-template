@@ -13,6 +13,7 @@ Start with **Getting started**, then read the guide for whatever you're working 
 | [Errors and exceptions](development/errors-and-exceptions.md) | return or throw errors, add error codes, map library exceptions |
 | [Authentication and authorization](development/authentication-and-authorization.md) | protect endpoints, add roles/policies, read the current user |
 | [Email](development/email.md) | send an email, write a template, configure SMTP |
+| [Background jobs](development/background-jobs.md) | run work in the background, schedule recurring jobs, use the dashboard, run workers |
 | [CORS](development/cors.md) | connect a browser frontend on another origin |
 | [JSON serialization](development/json-serialization.md) | wonder why a request is rejected, or serialize JSON by hand |
 | [API documentation (Swagger)](development/api-documentation.md) | test the API in the browser or improve the generated docs |

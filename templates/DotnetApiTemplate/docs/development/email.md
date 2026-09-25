@@ -50,32 +50,34 @@ Without Mailpit, set `EMAIL_HOST=` (empty) in `.env`: emails are then written to
 Inject `IEmailService` and pass a typed email:
 
 ```csharp
-internal sealed class UserService(AppDbContext db, IEmailService emailService, ...) : IUserService
-{
-    ...
-    await emailService.SendAsync(user.Email, new WelcomeEmail(user.FullName, user.Email), cancellationToken);
-}
+await emailService.SendAsync(user.Email, new WelcomeEmail(user.FullName, user.Email), cancellationToken);
 ```
 
-**Decide what a failed send means.** SMTP servers go down. If the email is a side effect (welcome email,
-notification), catch and log so the request still succeeds, like `UserService.SendWelcomeEmailAsync`:
+`SendAsync` talks to SMTP right away (typically 100–500 ms) and throws if the server is down. So decide
+where it runs:
+
+| Email | Send it | Why |
+| --- | --- | --- |
+| A side effect: welcome email, notifications, receipts | **From a background job** (the default) | The request doesn't wait for SMTP, and a failing SMTP server is retried instead of losing the email |
+| The operation itself, when the user waits for it: a login code | Directly, in the request | The client must know if it failed: translate the exception into `ExternalServiceException` (`502`) |
+
+The welcome email is the example of the first kind: `UserService` only enqueues it, and
+`Features/Users/Jobs/SendWelcomeEmailJob.cs` loads the user and sends it:
 
 ```csharp
-try
+// in the service: one line, no SMTP in the request
+jobs.Enqueue<SendWelcomeEmailJob>(job => job.ExecuteAsync(user.Id, CancellationToken.None));
+
+// the job (queue "emails", retried up to 5 times)
+[Queue(JobQueues.Emails)]
+[AutomaticRetry(Attempts = 5)]
+public sealed class SendWelcomeEmailJob(AppDbContext db, IEmailService emailService, ...)
 {
-    await emailService.SendAsync(user.Email, new WelcomeEmail(user.FullName, user.Email), cancellationToken);
-}
-catch (Exception ex) when (ex is not OperationCanceledException)
-{
-    logger.LogError(ex, "Failed to send the welcome email to user {UserId}", user.Id);
+    public async Task ExecuteAsync(int userId, CancellationToken cancellationToken) { ... }
 }
 ```
 
-If the email *is* the operation (password reset, verification code), let the exception propagate, or
-translate it into `ExternalServiceException` so the client gets a `502` with a clear message.
-
-Sending is synchronous (the request waits for SMTP, typically 100–500 ms). For high volume or slow
-providers, queue the emails and send them from a background worker instead.
+See [Background jobs](background-jobs.md).
 
 ## Add a new email
 

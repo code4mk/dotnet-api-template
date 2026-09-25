@@ -15,6 +15,11 @@
     <PackageVersion Include="DotNetEnv" Version="3.2.0" />
   </ItemGroup>
 
+  <ItemGroup Label="Background jobs">
+    <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.25" />
+    <PackageVersion Include="Hangfire.PostgreSql" Version="1.21.1" />
+  </ItemGroup>
+
   <ItemGroup Label="Email">
     <PackageVersion Include="Scriban" Version="7.5.0" />
     <PackageVersion Include="PreMailer.Net" Version="2.7.4" />
@@ -24,6 +29,8 @@
   <ItemGroup Label="Transitive pins">
     <!-- Npgsql depends on an older EF Core Relational; keep it on the same version as the other EF packages. -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.12" />
+    <!-- Hangfire.Core depends on Newtonsoft.Json 11.0.1, which has a known vulnerability (GHSA-5crp-9r3c-p9vr). -->
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
   <ItemGroup Label="Tests">

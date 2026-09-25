@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using DotnetApiTemplate.Api.Data;
+using Hangfire;
 using DotnetApiTemplate.Api.Infrastructure.Email.Sending;
 using DotnetApiTemplate.IntegrationTests.TestUtilities;
 
@@ -21,11 +22,15 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     /// <summary>Emails "sent" by the API: rendered for real, but captured instead of delivered.</summary>
     public FakeEmailSender Emails { get; } = new();
 
+    /// <summary>Jobs enqueued by the API: recorded, not stored. Run them with <c>Jobs.RunAsync(factory.Services)</c>.</summary>
+    public FakeBackgroundJobClient Jobs { get; } = new();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
 
         // Required settings (validated on startup).
+        builder.UseSetting("APP_ROLE", "api");   // no Hangfire job server in tests: jobs are recorded, see Jobs
         builder.UseSetting("JWT_ISSUER", "tests");
         builder.UseSetting("JWT_AUDIENCE", "tests");
         builder.UseSetting("JWT_SIGNING_KEY", "integration-tests-signing-key-0123456789abcdef");
@@ -52,6 +57,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
 
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(Emails);
+
+            services.RemoveAll<IBackgroundJobClient>();
+            services.AddSingleton<IBackgroundJobClient>(Jobs);
 
             // Replace JWT with a simple test scheme (see TestAuthHandler).
             services.AddAuthentication(TestAuthHandler.SchemeName)

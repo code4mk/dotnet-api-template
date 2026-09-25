@@ -15,6 +15,7 @@ using DotnetApiTemplate.Api.Features.Products;
 using DotnetApiTemplate.Api.Features.Users;
 using DotnetApiTemplate.Api.Infrastructure.Authentication;
 using DotnetApiTemplate.Api.Infrastructure.Email;
+using DotnetApiTemplate.Api.Infrastructure.Jobs;
 
 namespace DotnetApiTemplate.Api.Common.Extensions;
 
@@ -47,7 +48,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    /// <summary>Database, authentication, email and other external dependencies.</summary>
+    /// <summary>Database, authentication, email, background jobs and other external dependencies.</summary>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.TryAddSingleton(TimeProvider.System);
@@ -58,6 +59,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddJwtAuthentication(configuration);
         services.AddEmail(configuration);
+        services.AddJobs(configuration);
 
         return services;
     }

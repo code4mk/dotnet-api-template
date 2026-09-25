@@ -33,6 +33,7 @@ The database starts empty: register a user with `POST /api/users`, then log in w
 | `http://localhost:5080/swagger` | Swagger UI ([how to use it](api-documentation.md)) |
 | `http://localhost:5080/health` | Health check |
 | `http://localhost:28025` | Mailpit: every email the API sends |
+| `http://localhost:5080/jobs` | Background jobs dashboard ([guide](background-jobs.md)) |
 | `src/DotnetApiTemplate.Api/DotnetApiTemplate.Api.http` | Sample requests for your IDE |
 
 ## Daily commands
@@ -62,6 +63,7 @@ live (a changed method signature, a new DI registration) it asks to restart; set
 | Return or throw errors | [Errors and exceptions](errors-and-exceptions.md) |
 | Protect endpoints, roles | [Authentication and authorization](authentication-and-authorization.md) |
 | Send an email | [Email](email.md) |
+| Run work in the background, schedule jobs | [Background jobs](background-jobs.md) |
 | Connect a browser frontend | [CORS](cors.md) |
 | Understand a JSON `400` | [JSON serialization](json-serialization.md) |
 | Log, trace a request | [Logging and correlation ids](logging-and-correlation-ids.md) |
@@ -81,5 +83,6 @@ All docs: [docs/README.md](../README.md).
 | `port is already allocated` | Another container uses the port: change `DB_PORT`, `API_PORT`, `EMAIL_PORT` or `MAILPIT_UI_PORT` in `.env` |
 | `dotnet watch` fails with "address already in use" on 5080 | Another app uses port 5080: stop it, or change `applicationUrl` in `Properties/launchSettings.json` |
 | `dotnet ef` not found | `dotnet tool restore` |
+| `Hangfire's tables (schema "hangfire") don't exist` | Apply migrations: `dotnet ef database update --project src/DotnetApiTemplate.Api` |
 | Emails don't show up in Mailpit | `docker compose up -d mailpit`, and check `EMAIL_HOST=localhost` and `EMAIL_PORT` in `.env` |
 | Browser error `No 'Access-Control-Allow-Origin' header` | Add the frontend origin to `CORS_ALLOWED_ORIGINS`, see [CORS](cors.md) |

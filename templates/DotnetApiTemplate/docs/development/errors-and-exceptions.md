@@ -185,6 +185,6 @@ TimeoutException =>
 - Don't put exception messages (`ex.Message`) into responses; only messages you wrote.
 - Catch only where you can do something useful: retry, fall back, or translate (e.g. into
   `ExternalServiceException`).
-- A failure that must not fail the request (like the welcome email) is caught and logged where it happens;
-  see `UserService.SendWelcomeEmailAsync`.
+- Work that must not fail the request (like the welcome email) goes into a background job, which
+  retries on failure; see [Background jobs](background-jobs.md).
 - Test error paths: unit tests assert the returned `Error`, integration tests assert status and `title`.

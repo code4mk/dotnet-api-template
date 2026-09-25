@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging.Abstractions;
 using DotnetApiTemplate.Api.Common.Results;
 using DotnetApiTemplate.Api.Data;
 using DotnetApiTemplate.Api.Domain.Entities;
 using DotnetApiTemplate.Api.Features.Users;
-using DotnetApiTemplate.Api.Features.Users.Emails;
+using DotnetApiTemplate.Api.Features.Users.Jobs;
 using DotnetApiTemplate.UnitTests.TestUtilities;
 
 namespace DotnetApiTemplate.UnitTests.Features.Users;
@@ -13,22 +12,22 @@ public sealed class UserServiceTests : IDisposable
 {
     private readonly AppDbContext _db = TestDbContextFactory.Create();
     private readonly PasswordHasher<User> _hasher = new();
-    private readonly FakeEmailService _emails = new();
+    private readonly FakeBackgroundJobClient _jobs = new();
     private readonly UserService _sut;
 
-    public UserServiceTests() => _sut = new UserService(_db, _hasher, _emails, NullLogger<UserService>.Instance);
+    public UserServiceTests() => _sut = new UserService(_db, _hasher, _jobs);
 
     public void Dispose() => _db.Dispose();
 
     [Fact]
-    public async Task CreateAsync_WithNewEmail_SendsWelcomeEmail()
+    public async Task CreateAsync_WithNewEmail_EnqueuesWelcomeEmailJob()
     {
-        await _sut.CreateAsync(new CreateUserRequest("Jane Doe", "Jane@Example.com", "Password@123"), CancellationToken.None);
+        var result = await _sut.CreateAsync(new CreateUserRequest("Jane Doe", "Jane@Example.com", "Password@123"), CancellationToken.None);
 
-        var (to, email) = Assert.Single(_emails.Sent);
-        Assert.Equal("jane@example.com", to);
-        var welcome = Assert.IsType<WelcomeEmail>(email);
-        Assert.Equal("Jane Doe", welcome.FullName);
+        var job = Assert.Single(_jobs.Jobs);
+        Assert.Equal(typeof(SendWelcomeEmailJob), job.Type);
+        Assert.Equal(nameof(SendWelcomeEmailJob.ExecuteAsync), job.Method.Name);
+        Assert.Equal(result.Value.Id, job.Args[0]);
     }
 
     [Fact]

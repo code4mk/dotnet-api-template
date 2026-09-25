@@ -57,6 +57,7 @@ Test utilities (`UnitTests/TestUtilities/`):
 | --- | --- |
 | `TestDbContextFactory.Create()` | An isolated in-memory `AppDbContext` |
 | `FakeEmailService` | Records sent emails: `Assert.Single(_emails.Sent)` |
+| `FakeBackgroundJobClient` | Records enqueued jobs: `Assert.Single(_jobs.Jobs).Type` |
 | `TestHostEnvironment("Development")` | An `IHostEnvironment` for code that checks the environment |
 | `NullLogger<T>.Instance` | A logger that does nothing |
 | `Options.Create(new XSettings { ... })` | Settings for classes that take `IOptions<T>` |
@@ -77,6 +78,7 @@ on these (a unique index, a raw SQL query) belong in integration tests against r
 | PostgreSQL | EF Core in-memory database (one per factory) |
 | JWT authentication | `TestAuthHandler`: the `X-Test-Role` header logs you in with that role |
 | Email sending | `FakeEmailSender`: emails are rendered for real, then captured in `factory.Emails.Sent` |
+| Background jobs | `APP_ROLE=api` (no job server) and `FakeBackgroundJobClient`: jobs are recorded in `factory.Jobs`; run them with `await factory.Jobs.RunAsync(factory.Services)` |
 | Environment | `Testing` (no Swagger), fixed JWT and database settings |
 
 ```csharp

@@ -10,7 +10,7 @@ the API never creates tables, migrates or seeds data at startup.
 | `Domain/Entities/` | Entity classes (`User`, `Product`), deriving from `BaseEntity` (`Id`, `CreatedAt`, `UpdatedAt`) |
 | `Data/Configurations/` | One `IEntityTypeConfiguration<T>` per entity: table, lengths, indexes (picked up automatically) |
 | `Data/AppDbContext.cs` | `DbSet`s; sets `CreatedAt`/`UpdatedAt` (UTC) in `SaveChangesAsync` |
-| `Data/Migrations/` | Generated migrations; `InitialCreate` creates the users and products tables |
+| `Data/Migrations/` | Generated migrations; `InitialCreate` creates the users and products tables, `AddHangfireSchema` the background job tables (schema `hangfire`) |
 
 The connection string is built from `DB_*` in `.env` (`DatabaseSettings`). `dotnet ef` uses the same
 settings, so commands run against the database in your `.env`.
@@ -160,6 +160,13 @@ Or create data through the API (`.http` file, Swagger), which also exercises val
 - Table and column names are PascalCase and must be quoted in PostgreSQL SQL: `"Products"."Name"`.
 - Make SQL safe to re-run where you can (`WHERE "Sku" IS NULL`, `ON CONFLICT DO NOTHING`).
 - Write a `Down` that undoes the change, or leave it empty with a comment when the change can't be undone.
+
+## Hangfire's tables
+
+Background jobs are stored in their own schema, `hangfire`, created by the migration `AddHangfireSchema`
+(the same SQL as Hangfire.PostgreSql's installer; Hangfire never changes the schema at startup). You don't
+touch these tables; when a Hangfire.PostgreSql update adds a schema version, a test tells you to add a
+migration. See [Background jobs](background-jobs.md#upgrading-hangfirepostgresql).
 
 ## Production
 

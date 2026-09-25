@@ -1,19 +1,18 @@
+using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DotnetApiTemplate.Api.Common.Pagination;
 using DotnetApiTemplate.Api.Common.Results;
 using DotnetApiTemplate.Api.Data;
 using DotnetApiTemplate.Api.Domain.Entities;
-using DotnetApiTemplate.Api.Features.Users.Emails;
-using DotnetApiTemplate.Api.Infrastructure.Email;
+using DotnetApiTemplate.Api.Features.Users.Jobs;
 
 namespace DotnetApiTemplate.Api.Features.Users;
 
 internal sealed class UserService(
     AppDbContext db,
     IPasswordHasher<User> passwordHasher,
-    IEmailService emailService,
-    ILogger<UserService> logger) : IUserService
+    IBackgroundJobClient jobs) : IUserService
 {
     public Task<PagedResponse<UserResponse>> GetAllAsync(int? page, int? pageSize, CancellationToken cancellationToken) =>
         db.Users
@@ -47,7 +46,8 @@ internal sealed class UserService(
         db.Users.Add(user);
         await db.SaveChangesAsync(cancellationToken);
 
-        await SendWelcomeEmailAsync(user, cancellationToken);
+        // In the background: sign-up doesn't wait for SMTP, and failures are retried (see SendWelcomeEmailJob).
+        jobs.Enqueue<SendWelcomeEmailJob>(job => job.ExecuteAsync(user.Id, CancellationToken.None));
 
         return user.ToResponse();
     }
@@ -78,19 +78,6 @@ internal sealed class UserService(
         await db.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
-    }
-
-    /// <summary>A failed welcome email must not fail the sign-up, so errors are logged, not thrown.</summary>
-    private async Task SendWelcomeEmailAsync(User user, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await emailService.SendAsync(user.Email, new WelcomeEmail(user.FullName, user.Email), cancellationToken);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            logger.LogError(ex, "Failed to send the welcome email to user {UserId}", user.Id);
-        }
     }
 }
 

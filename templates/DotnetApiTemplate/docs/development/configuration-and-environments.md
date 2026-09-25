@@ -57,9 +57,11 @@ root, from `src/...` and in tests.
 | Variable | Default | Used for |
 | --- | --- | --- |
 | `APP_ENV` | `dev` | Environment (see above) |
+| `APP_ROLE` | `all` | What the process runs: `all` (API + jobs), `api`, `worker`. See [Background jobs](background-jobs.md#roles-app_role) |
 | `DB_HOST` | `localhost` | PostgreSQL host when the API runs outside Docker (inside Compose it's always `db`) |
 | `DB_PORT` | `5432` | PostgreSQL port; also the host port Docker publishes it on (`54320` in this project) |
 | `DB_NAME`, `DB_USER`, `DB_PASSWORD` | — (required) | Database name and credentials |
+| `DB_MAX_POOL_SIZE` | `100` | Database connections per process; lower it with many instances |
 | `API_PORT` | `18080` | Host port of the API container |
 | `CORS_ALLOWED_ORIGINS` | empty | Browser origins allowed to call the API, see [CORS](cors.md) |
 | `JWT_SIGNING_KEY` | — (required, 32+ chars) | Signs access tokens, see [Authentication](authentication-and-authorization.md) |
@@ -71,6 +73,8 @@ root, from `src/...` and in tests.
 | `EMAIL_USERNAME`, `EMAIL_PASSWORD` | empty | SMTP login (skipped when the username is empty) |
 | `EMAIL_FROM`, `EMAIL_FROM_NAME` | `no-reply@dotnetapitemplate.local`, `DotnetApiTemplate` | Sender address and display name |
 | `MAILPIT_UI_PORT` | `28025` | Host port of the Mailpit inbox (Docker only) |
+| `JOBS_WORKER_COUNT`, `JOBS_QUEUES`, `JOBS_POLL_INTERVAL_SECONDS`, `JOBS_SHUTDOWN_TIMEOUT_SECONDS` | `10`, `default,emails`, `5`, `60` | Background job worker, see [Background jobs](background-jobs.md#configuration) |
+| `JOBS_DASHBOARD_USERNAME`, `JOBS_DASHBOARD_PASSWORD` | empty | `/jobs` dashboard login outside Development |
 
 ## Reading settings in code
 
@@ -107,11 +111,12 @@ Existing classes:
 
 | Class | Location | Variables |
 | --- | --- | --- |
-| `AppSettings` | `Common/Settings/` | `APP_ENV` (+ `IsDev`, `IsStage`, `IsProd`) |
+| `AppSettings` | `Common/Settings/` | `APP_ENV`, `APP_ROLE` (+ `IsDev`, `IsStage`, `IsProd`, `RunsApi`, `RunsJobs`) |
 | `DatabaseSettings` | `Common/Settings/` | `DB_*` (+ `ConnectionString`) |
 | `CorsSettings` | `Common/Cors/` | `CORS_ALLOWED_ORIGINS` (+ parsed `Origins`) |
 | `JwtSettings` | `Infrastructure/Authentication/` | `JWT_*` |
 | `EmailSettings` | `Infrastructure/Email/` | `EMAIL_*` |
+| `JobsSettings` | `Infrastructure/Jobs/` | `JOBS_*` |
 
 ### Raw values
 

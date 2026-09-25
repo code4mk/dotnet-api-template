@@ -14,7 +14,8 @@ Features/Categories/
 ├── CategoryMappings.cs                       6. entity ↔ DTO
 ├── ICategoryService.cs                       7. service contract
 ├── CategoryService.cs                        8. business rules + CategoryErrors
-└── CategoryEndpoints.cs                      9. HTTP (implements IEndpoints)
+├── CategoryEndpoints.cs                      9. HTTP (implements IEndpoints)
+└── Emails/, Jobs/                            optional: emails (see Email) and background jobs (see Background jobs)
 Common/Extensions/...                         10. register + map (manual mode only)
 tests/...                                     11. unit + integration tests, route snapshot
 ```

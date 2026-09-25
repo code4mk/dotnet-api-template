@@ -19,6 +19,7 @@ dotnet new dotnet-api-template -n NexusRE -o nexusre-backend
 | Data | EF Core with PostgreSQL, entity configurations, `InitialCreate` migration (applied manually, never at startup) |
 | Security | JWT bearer authentication, Admin policy, password hashing, CORS for exact origins from `.env` |
 | Email | Typed emails with Scriban templates, shared layout, CSS inlining (PreMailer.Net), MailKit SMTP, Mailpit inbox for local development |
+| Background jobs | Hangfire + PostgreSQL: queued, delayed and recurring jobs with retries, `/jobs` dashboard (basic auth), API and worker in one container under supervisor |
 | Operations | Correlation id middleware, `/health` endpoint, structured logging |
 | Samples | Auth (login), Users, Products features, `.http` request file |
 | Tests | Unit tests (EF Core in-memory) and integration tests (`WebApplicationFactory`) |
