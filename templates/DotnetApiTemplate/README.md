@@ -7,6 +7,7 @@ ASP.NET Core Minimal API built on .NET 10.
 ```bash
 cp .env.example .env
 docker compose up -d db mailpit
+dotnet build                     # restores packages; dotnet ef needs this once
 dotnet tool restore
 dotnet ef database update --project src/DotnetApiTemplate.Api
 dotnet watch --project src/DotnetApiTemplate.Api

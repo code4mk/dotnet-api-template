@@ -16,6 +16,7 @@ cp .env.example .env                      # Windows PowerShell: Copy-Item .env.e
 docker compose up -d db mailpit
 
 # 3. Tables: migrations are applied manually, never at startup
+dotnet build                              # restores packages: dotnet ef can't run on an unrestored project
 dotnet tool restore
 dotnet ef database update --project src/DotnetApiTemplate.Api
 
@@ -83,6 +84,7 @@ All docs: [docs/README.md](../README.md).
 | `port is already allocated` | Another container uses the port: change `DB_PORT`, `API_PORT`, `EMAIL_PORT` or `MAILPIT_UI_PORT` in `.env` |
 | `dotnet watch` fails with "address already in use" on 5080 | Another app uses port 5080: stop it, or change `applicationUrl` in `Properties/launchSettings.json` |
 | `dotnet ef` not found | `dotnet tool restore` |
+| `dotnet ef`: `Assets file '.../obj/project.assets.json' not found` / `Unable to retrieve project metadata` | The project isn't restored yet (fresh clone or new project, or `obj/` deleted): run `dotnet build` once, then the `dotnet ef` command again |
 | `Hangfire's tables (schema "hangfire") don't exist` | Apply migrations: `dotnet ef database update --project src/DotnetApiTemplate.Api` |
 | Emails don't show up in Mailpit | `docker compose up -d mailpit`, and check `EMAIL_HOST=localhost` and `EMAIL_PORT` in `.env` |
 | Browser error `No 'Access-Control-Allow-Origin' header` | Add the frontend origin to `CORS_ALLOWED_ORIGINS`, see [CORS](cors.md) |

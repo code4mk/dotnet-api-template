@@ -18,6 +18,7 @@ settings, so commands run against the database in your `.env`.
 ## Setup
 
 ```bash
+dotnet build                                                    # restores packages (dotnet ef doesn't do it itself)
 dotnet tool restore                                             # installs dotnet-ef (once per machine)
 docker compose up -d db                                         # local PostgreSQL
 dotnet ef database update --project src/DotnetApiTemplate.Api   # apply all migrations
@@ -192,6 +193,7 @@ migration. See [Background jobs](background-jobs.md#upgrading-hangfirepostgresql
 
 | Output | Meaning |
 | --- | --- |
+| `Assets file '.../obj/project.assets.json' not found` and `Unable to retrieve project metadata` | The project was never restored (fresh clone, new project, deleted `obj/`); `dotnet ef` doesn't restore by itself. Run `dotnet build` once, then the command again |
 | `No migrations were applied. The database is already up to date.` | Nothing to do |
 | Why doesn't the first update on an empty database log EF's "history table missing" error? | `Data/MissingHistoryTableInterceptor.cs` answers EF's first look at `__EFMigrationsHistory` when the table doesn't exist yet (only while `dotnet ef` runs), so a `fail:` line always means a real problem |
 | An error **after** `Applying migration 'X'` and no `Done.` | Migration X failed and was rolled back; the `fail: ... Failed executing DbCommand` line above it shows its SQL |
