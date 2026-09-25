@@ -188,6 +188,15 @@ migration. See [Background jobs](background-jobs.md#upgrading-hangfirepostgresql
 - Creating an index on a big table locks writes; use a raw SQL migration with
   `CREATE INDEX CONCURRENTLY` (and `suppressTransaction: true` on `migrationBuilder.Sql`).
 
+## Troubleshooting
+
+| Output | Meaning |
+| --- | --- |
+| `No migrations were applied. The database is already up to date.` | Nothing to do |
+| Why doesn't the first update on an empty database log EF's "history table missing" error? | `Data/MissingHistoryTableInterceptor.cs` answers EF's first look at `__EFMigrationsHistory` when the table doesn't exist yet (only while `dotnet ef` runs), so a `fail:` line always means a real problem |
+| An error **after** `Applying migration 'X'` and no `Done.` | Migration X failed and was rolled back; the `fail: ... Failed executing DbCommand` line above it shows its SQL |
+| `relation "..." already exists` | The table was created outside migrations (or by an old `EnsureCreated`): drop it locally (`docker compose down -v`) and update again |
+
 ## Useful SQL
 
 ```bash

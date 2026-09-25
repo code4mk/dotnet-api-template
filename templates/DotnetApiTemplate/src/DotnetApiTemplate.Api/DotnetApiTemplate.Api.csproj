@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <RootNamespace>DotnetApiTemplate.Api</RootNamespace>
+    <!-- The API serves no wwwroot/static web assets (Swagger UI and the Hangfire dashboard ship their own files).
+         Off, so `dotnet watch` doesn't look for their dev manifest (on macOS/Linux it fails with "obj\Debug/..."). -->
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
     <UserSecretsId>4f6c2a8e-1b3d-4e5f-9a7b-2c8d0e1f3a5b</UserSecretsId>
   </PropertyGroup>
 

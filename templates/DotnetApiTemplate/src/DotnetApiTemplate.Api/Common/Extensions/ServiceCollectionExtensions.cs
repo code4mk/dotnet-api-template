@@ -54,7 +54,15 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System);
 
         services.AddDbContext<AppDbContext>((sp, options) =>
-            options.UseNpgsql(sp.GetRequiredService<DatabaseSettings>().ConnectionString));
+        {
+            options.UseNpgsql(sp.GetRequiredService<DatabaseSettings>().ConnectionString);
+
+            if (EF.IsDesignTime)
+            {
+                // `dotnet ef` only: no misleading "Failed executing DbCommand" on the first database update.
+                options.AddInterceptors(new MissingHistoryTableInterceptor());
+            }
+        });
 
         services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddJwtAuthentication(configuration);
