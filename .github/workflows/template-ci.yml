@@ -33,7 +33,10 @@ jobs:
       - name: Build and test the sample project
         working-directory: ${{ runner.temp }}/sample
         run: |
-          dotnet build --configuration Release
+          # The template must ship its lock files (locked mode would silently create missing ones).
+          test "$(find . -name packages.lock.json -not -path '*/obj/*' | wc -l)" -eq 3
+          dotnet restore --locked-mode
+          dotnet build --configuration Release --no-restore
           dotnet test --configuration Release --no-build
 
       - name: Check that no placeholder names are left

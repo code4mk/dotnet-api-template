@@ -19,6 +19,7 @@ Start with **Getting started**, then read the guide for whatever you're working 
 | [API documentation (Swagger)](development/api-documentation.md) | test the API in the browser or improve the generated docs |
 | [Logging and correlation ids](development/logging-and-correlation-ids.md) | log from code, trace a request, investigate a reported error |
 | [Testing](development/testing.md) | write unit or integration tests |
+| [Packages and dependencies](development/packages-and-dependencies.md) | add or update a NuGet package, lock files, security checks |
 | [Docker and deployment](development/docker-and-deployment.md) | run everything in Docker, build the production image, deploy |
 | [Coding guidelines](development/coding-guidelines.md) | write or review code (rules and PR checklist) |
 

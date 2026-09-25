@@ -70,6 +70,7 @@ live (a changed method signature, a new DI registration) it asks to restart; set
 | Log, trace a request | [Logging and correlation ids](logging-and-correlation-ids.md) |
 | Write tests | [Testing](testing.md) |
 | Docker, CI, deploying | [Docker and deployment](docker-and-deployment.md) |
+| Add or update a package | [Packages and dependencies](packages-and-dependencies.md) |
 | Code rules, PR checklist | [Coding guidelines](coding-guidelines.md) |
 
 All docs: [docs/README.md](../README.md).

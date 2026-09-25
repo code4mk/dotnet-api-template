@@ -102,6 +102,14 @@
   },
   "sources": [
     {
+      "exclude": [
+        "**/[Bb]in/**",
+        "**/[Oo]bj/**",
+        ".template.config/**/*",
+        "**/*.filelist",
+        "**/*.user",
+        "**/.git/**"
+      ],
       "modifiers": [
         {
           "exclude": [

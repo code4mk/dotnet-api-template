@@ -92,7 +92,7 @@ supervisor, e.g. `--entrypoint dotnet ... DotnetApiTemplate.Api.dll` with `APP_R
 
 | Workflow | Trigger | Does |
 | --- | --- | --- |
-| `.github/workflows/build-and-test.yml` | push / pull request to `main` | build, run all tests with coverage |
+| `.github/workflows/build-and-test.yml` | push / pull request to `main` | locked restore (+ lock files committed), build, run all tests with coverage |
 | `.github/workflows/deploy.yml` | tag `v*.*.*` | build the production image and push it to GitHub Container Registry (`ghcr.io/<owner>/<repo>/api`), tagged with the version and `latest` |
 
 Release:

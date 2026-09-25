@@ -6,5 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Record every package (also transitive) with its content hash in packages.lock.json. Commit the lock files;
+         CI and the Docker build restore in locked mode (see docs/development/packages-and-dependencies.md). -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 </Project>

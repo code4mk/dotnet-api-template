@@ -17,8 +17,16 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Restore
-        run: dotnet restore
+      - name: Restore (locked mode, fails if packages.lock.json is out of date)
+        run: dotnet restore --locked-mode
+
+      # Locked mode quietly creates missing lock files, so check they're committed and unchanged.
+      - name: Check lock files are committed
+        run: |
+          if [ -n "$(git status --porcelain -- '**/packages.lock.json')" ]; then
+            git status --short -- '**/packages.lock.json'
+            echo "packages.lock.json missing or changed: run 'dotnet restore --force-evaluate' and commit the lock files."; exit 1
+          fi
 
       - name: Build
         run: dotnet build --no-restore --configuration Release

@@ -9,10 +9,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Restore first (cached until project files change).
+# Restore first (cached until project or lock files change). Locked: exactly the packages and content
+# hashes in packages.lock.json, or the build fails.
 COPY Directory.Build.props Directory.Packages.props ./
-COPY src/DotnetApiTemplate.Api/DotnetApiTemplate.Api.csproj src/DotnetApiTemplate.Api/
-RUN dotnet restore src/DotnetApiTemplate.Api/DotnetApiTemplate.Api.csproj
+COPY src/DotnetApiTemplate.Api/DotnetApiTemplate.Api.csproj src/DotnetApiTemplate.Api/packages.lock.json src/DotnetApiTemplate.Api/
+RUN dotnet restore src/DotnetApiTemplate.Api/DotnetApiTemplate.Api.csproj --locked-mode
 
 # Build and publish.
 COPY src/ src/

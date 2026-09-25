@@ -44,6 +44,7 @@ Five files per feature: `<Feature>Endpoints.cs`, `I<Feature>Service.cs`, `<Featu
 - [ ] Business logic is in the service and covered by unit tests.
 - [ ] New endpoints have integration tests, including auth and validation cases.
 - [ ] Public endpoints are intentional (`AllowAnonymous`), and `routes.snapshot.txt` is updated and reviewed.
+- [ ] Package changes: version in `Directory.Packages.props` and the updated `packages.lock.json` files committed together.
 - [ ] Migration added if the model changed, and its `Up`/`Down` reviewed (no unintended drops).
 - [ ] No secrets in code, `appsettings.json` or `.env.example`; new variables added to `.env.example`.
 - [ ] New error codes follow `feature.error_name` and error paths are tested.
