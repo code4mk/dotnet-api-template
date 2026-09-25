@@ -61,6 +61,7 @@ live (a changed method signature, a new DI registration) it asks to restart; set
 | Build a new feature end to end | [Adding a feature](adding-a-feature.md) |
 | Add a setting, switch environments | [Configuration and environments](configuration-and-environments.md) |
 | Change the schema or data | [Database and migrations](database-and-migrations.md) |
+| Query strings, JSON bodies, file uploads | [Request data](request-data.md) |
 | Return or throw errors | [Errors and exceptions](errors-and-exceptions.md) |
 | Protect endpoints, roles | [Authentication and authorization](authentication-and-authorization.md) |
 | Send an email | [Email](email.md) |

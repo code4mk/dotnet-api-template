@@ -5,7 +5,9 @@
 - Prefix every route with `/api`.
 - Use plural, lowercase nouns: `/api/products`, `/api/products/{id}`.
 - Constrain route parameters: `/{id:int}`.
-- Use HTTP verbs for actions: `GET` read, `POST` create, `PUT` full update, `DELETE` remove.
+- Use HTTP verbs for actions: `GET` read, `POST` create, `PUT` full update, `PATCH` partial update, `DELETE` remove.
+- Filters, paging and sorting in the query string; request bodies are JSON (`Content-Type: application/json`); files are
+  uploaded with `multipart/form-data` to their own endpoints. Details: [Request data](../development/request-data.md).
 
 ## Responses
 

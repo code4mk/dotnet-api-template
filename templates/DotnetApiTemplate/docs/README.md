@@ -10,6 +10,7 @@ Start with **Getting started**, then read the guide for whatever you're working 
 | [Configuration and environments](development/configuration-and-environments.md) | add or change a setting, switch dev/stage/prod, handle secrets |
 | [Adding a feature](development/adding-a-feature.md) | build a new endpoint group end to end (entity → migration → service → endpoints → tests) |
 | [Database and migrations](development/database-and-migrations.md) | change the schema, move or backfill data, deploy migrations |
+| [Request data](development/request-data.md) | receive route values, query strings, headers, JSON bodies, PATCH and file uploads |
 | [Errors and exceptions](development/errors-and-exceptions.md) | return or throw errors, add error codes, map library exceptions |
 | [Authentication and authorization](development/authentication-and-authorization.md) | protect endpoints, add roles/policies, read the current user |
 | [Email](development/email.md) | send an email, write a template, configure SMTP |
