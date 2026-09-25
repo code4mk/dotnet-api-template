@@ -5,7 +5,7 @@
     <PackageType>Template</PackageType>
     <PackageId>Code4mk.MinimalApi.Template</PackageId>
     <PackageVersion>1.0.0</PackageVersion>
-    <Title>Dotnet Minimal API Template</Title>
+    <Title>Code4mk ASP.NET Core API Template</Title>
     <Authors>Code4mk</Authors>
     <Description>ASP.NET Core Minimal API solution template: feature folders, service layer, EF Core, JWT, Docker, tests and docs.</Description>
     <PackageTags>dotnet-new;templates;minimal-api;aspnetcore</PackageTags>

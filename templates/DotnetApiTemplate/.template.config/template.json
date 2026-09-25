@@ -3,7 +3,7 @@
   "author": "Code4mk",
   "classifications": ["Web", "API", "Minimal API", "Solution"],
   "identity": "Code4mk.MinimalApi.Template",
-  "name": "Code4mk Minimal API Solution",
+  "name": "Code4mk ASP.NET Core API Template",
   "description": "ASP.NET Core Minimal API solution with feature folders, service layer, EF Core (PostgreSQL), JWT auth, Docker, tests and docs.",
   "shortName": "dotnet-api-template",
   "sourceName": "DotnetApiTemplate",
