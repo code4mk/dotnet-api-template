@@ -136,6 +136,9 @@ public static class CategoryMappings
 }
 ```
 
+For fewer fields, computed or conditional fields and separate list/detail records, see
+[Response shaping](response-shaping.md).
+
 ## 7. Service contract
 
 ```csharp

@@ -62,6 +62,7 @@ live (a changed method signature, a new DI registration) it asks to restart; set
 | Add a setting, switch environments | [Configuration and environments](configuration-and-environments.md) |
 | Change the schema or data | [Database and migrations](database-and-migrations.md) |
 | Query strings, JSON bodies, file uploads | [Request data](request-data.md) |
+| Choose what a response contains | [Response shaping](response-shaping.md) |
 | Return or throw errors | [Errors and exceptions](errors-and-exceptions.md) |
 | Protect endpoints, roles | [Authentication and authorization](authentication-and-authorization.md) |
 | Send an email | [Email](email.md) |
