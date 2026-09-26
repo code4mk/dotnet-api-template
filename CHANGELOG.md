@@ -47,9 +47,12 @@ First stable release. Projects created from 0.0.1 differ in structure and settin
 - **NuGet lock files** (`packages.lock.json`) with locked restores in CI and the Docker build.
 - **Dependency injection validated at startup** (`ValidateOnBuild`, `ValidateScopes`) in every environment.
 - **Developer guides**, one per topic (`docs/README.md`): configuration and environments, adding a feature,
-  database and migrations (including data migrations), errors and exceptions, authentication, email, background
-  jobs, CORS, JSON, Swagger, logging and correlation ids, testing, Docker and deployment, packages and
-  dependencies.
+  database and migrations (including data migrations), request data (route, query strings, headers, JSON
+  bodies, PATCH, file uploads), response shaping (the equivalent of Laravel API Resources), errors and
+  exceptions, authentication, email, background jobs, CORS, JSON, Swagger, logging and correlation ids,
+  testing, Docker and deployment, packages and dependencies.
+- **ADRs** for email ([ADR-0003](templates/DotnetApiTemplate/docs/adr/0003-send-email-with-scriban-premailer-mailkit.md))
+  and background jobs ([ADR-0004](templates/DotnetApiTemplate/docs/adr/0004-run-background-jobs-with-hangfire-and-postgresql.md)).
 
 ### Changed
 
